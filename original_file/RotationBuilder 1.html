@@ -2,7 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,viewport-fit=cover,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; form-action 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'">
 <title>Rotation Builder</title>
 <!--BAKED-->
@@ -620,6 +620,10 @@ html[data-theme] .logo{
   .top #tabSeg button{flex:1}
   .scroll{-webkit-overflow-scrolling:touch}
 }
+
+html.embed .blade-mast, html.embed .blade-foot, html.embed #tabSeg { display:none !important; }
+html.embed .top { min-height:0; padding:4px 8px; }
+html.embed .top .theme { justify-self:end; }
 </style>
 </head>
 <body>
@@ -3774,6 +3778,13 @@ function syncBladeChrome(){
   if($("bladeShift") && sh) $("bladeShift").textContent = sh;
   if($("bladeRows")) $("bladeRows").textContent = (S.roster && S.roster.length) ? S.roster.length : 0;
 }
+
+if(/embed=1/.test(location.search||"")) document.documentElement.classList.add("embed");
+window.addEventListener("message", function(e){
+  var d = e.data || {};
+  if(d.type === "blade-theme" && d.theme && typeof setTheme === "function") setTheme(d.theme, true);
+});
+
 function boot(){
   const baked = document.getElementById("bakedCfg");
   let bakedCfg = null;
@@ -3806,6 +3817,12 @@ function boot(){
     if(!pj && window.RB_DEMO && RB_DEMO.proj){
       pj = RB_DEMO.proj; pm = RB_DEMO.projMeta;
     }
+    if((!r || !r.length) && window.RB_DEMO && RB_DEMO.roster){
+      r = RB_DEMO.roster; m = RB_DEMO.meta;
+    }
+    if(!pj && window.RB_DEMO && RB_DEMO.proj){
+      pj = RB_DEMO.proj; pm = RB_DEMO.projMeta;
+    }
     if(pj){ S.proj = pj; S.projMeta = pm || {}; }
     if(r && r.length){ S.roster = r; S.meta = m || S.meta;
       const d = (S.meta.dates||[]);
@@ -3816,6 +3833,10 @@ function boot(){
     fillTerms(); fillLocSelect(); renderAdmin(); wire(); refreshSaved();
     $("projInfo").innerHTML = projSummary();
     if(!$("iDate").value) $("iDate").value = todayKey();
+    if(S.roster && S.roster.length && $("iLoc") && !$("iLoc").value){
+      $("iLoc").value = "CKPT-A12";
+      $("iLoc").dispatchEvent(new Event("change"));
+    }
     if(S.roster && S.roster.length && $("iLoc") && !$("iLoc").value){
       $("iLoc").value = "CKPT-A12";
       $("iLoc").dispatchEvent(new Event("change"));
