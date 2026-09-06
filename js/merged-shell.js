@@ -40,13 +40,19 @@
     if (map[e.key]) { e.preventDefault(); S.switchTab(map[e.key]); }
   });
   applyRotTheme(localStorage.getItem("rotation.theme") || "dark");
-  if (!document.querySelector('script[src*="f7-placement"]')) {
+  function loadScript(src, then) {
+    if (document.querySelector('script[src*="' + src.split("/").pop() + '"]')) {
+      if (then) then();
+      return;
+    }
     var s = document.createElement("script");
-    s.src = "js/f7-placement.js";
-    s.onload = function () {
-      if (S.initPlacement) S.initPlacement();
-    };
+    s.src = src;
+    s.onload = then || function () {};
     document.body.appendChild(s);
   }
+  loadScript("js/f7-placement.js", function () {
+    if (S.initPlacement) S.initPlacement();
+    loadScript("js/f7-staff-fallback.js");
+  });
   S.switchTab("rotation");
 })();
