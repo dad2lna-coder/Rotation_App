@@ -52,12 +52,41 @@
     RS.cfg.titles["LTSO/BAG"] = 0;
   }
 
+  function ensurePlacement() {
+    if (!Sch) return null;
+    var matrix = Sch.state && Sch.state.placementMatrix;
+    if (!matrix || !matrix.rows || !matrix.rows.length) {
+      if (typeof Sch.placeTeams === "function") matrix = Sch.placeTeams();
+    }
+    if (typeof Sch.enrichOperationalLines === "function") Sch.enrichOperationalLines();
+    return matrix;
+  }
+
+  function locForLineDay(line, di) {
+    var gen2 = Sch && Sch.state && Sch.state.operationalLines;
+    if (gen2 && gen2.length) {
+      for (var i = 0; i < gen2.length; i++) {
+        var g = gen2[i];
+        if (String(g.id) === String(line.id) && g.day === di && g.placed && g.locKey) return g;
+      }
+    }
+    var teamId = line.teamId;
+    if (!teamId && Sch && Sch.teams && Sch.teams.teams) {
+      Sch.teams.teams.forEach(function (t) {
+        if ((t.members || []).some(function (m) { return String(m) === String(line.id); })) teamId = t.id;
+      });
+    }
+    if (teamId && Sch.placementForTeamDay) return Sch.placementForTeamDay(teamId, di % 7);
+    return null;
+  }
+
   function pushLinesToRotation() {
     if (!Sch || !Sch.state || !Sch.state.lines || !Sch.state.lines.length) return;
+    ensurePlacement();
     var RS = window.S;
-    var locEl = $("iLoc");
-    var loc = (locEl && locEl.value) || "CKPT-A12";
     var rows = [];
+    var locCounts = {};
+    var unplaced = 0;
     Sch.state.lines.forEach(function (line) {
       var sched = Sch.state.schedule[line.id] || Sch.state.schedule[String(line.id)] || [];
       var duties = (Sch.state.functionRotation || {})[String(line.id)] || [];
@@ -74,6 +103,15 @@
         var title = role;
         if (duty === "DFO") title = role + "/DFO";
         if (duty === "BAG") title = role + "/BAG";
+        var home = locForLineDay(line, di);
+        var loc = "";
+        if (home) loc = home.locKey || home.checkpoint || home.zone || "";
+        if (!loc) unplaced++;
+        if (loc) locCounts[loc] = (locCounts[loc] || 0) + 1;
+        var notes = [];
+        if (duty) notes.push(duty + " " + DOW[di % 7]);
+        else notes.push(DOW[di % 7]);
+        if (home && home.modset) notes.push(home.modset);
         rows.push({
           k: "L" + line.id,
           n: line.lineCode || ("Line " + String(line.id).padStart(3, "0")),
@@ -89,7 +127,10 @@
           q: "1234Z",
           ab: [],
           tr: [],
-          nt: duty ? [duty + " " + DOW[di % 7]] : [DOW[di % 7]]
+          nt: notes,
+          teamId: home && home.teamId,
+          generation: 2,
+          needsPlacement: !loc
         });
       }
     });
@@ -97,15 +138,15 @@
     applyTitles();
     if (RS) {
       RS.roster = rows;
-      RS.meta = { file: "(Blade lines)", rows: rows.length, when: "blade-generate", dates: [], unknown: {}, locs: {} };
-      RS.meta.locs[loc] = rows.length;
+      RS.meta = { file: "(Blade Gen-2 lines)", rows: rows.length, when: "f7-place", dates: [], unknown: {}, locs: locCounts };
       if (typeof DB !== "undefined" && DB.set) {
         DB.set("roster", RS.roster);
         DB.set("rosterMeta", RS.meta);
       }
     }
     if ($("rosterInfo")) {
-      $("rosterInfo").innerHTML = "<b>" + rows.length + "</b> Blade line-days · roster is lines · day of week, not calendar date";
+      var extra = unplaced ? (" · " + unplaced + " line-days still unplaced") : "";
+      $("rosterInfo").innerHTML = "<b>" + rows.length + "</b> Gen-2 line-days · location from team-home matrix" + extra;
     }
     if ($("iDate")) {
       $("iDate").value = "";
@@ -114,10 +155,18 @@
     }
     if ($("iLoc")) {
       if (typeof fillLocSelect === "function") fillLocSelect();
-      $("iLoc").value = loc;
-      $("iLoc").dispatchEvent(new Event("change"));
+      var firstLoc = Object.keys(locCounts)[0] || "";
+      if (firstLoc) {
+        $("iLoc").value = firstLoc;
+        $("iLoc").dispatchEvent(new Event("change"));
+      }
     }
-    if (Sch.updateStatus) Sch.updateStatus("Lines are the roster. Open [F7], pick checkpoint + shift, Generate Rotation.");
+    if (Sch.updateStatus) {
+      Sch.updateStatus(unplaced
+        ? "Gen-2 roster pushed with " + unplaced + " unplaced line-days. Place teams in F7."
+        : "Gen-2 operational lines pushed. Open [F7] and Generate Rotation.");
+    }
+    if (Sch.renderPlacementMatrix) Sch.renderPlacementMatrix();
   }
 
   function wrapGenerate() {
@@ -130,6 +179,10 @@
         if (typeof Sch.readFunctionBandsFromDom === "function") Sch.readFunctionBandsFromDom();
         if (typeof Sch.generateFunctionAssignments === "function") Sch.generateFunctionAssignments();
       } catch (e) { console.warn("function assign", e); }
+      try {
+        if (Sch.placeTeams) Sch.placeTeams();
+        if (Sch.enrichOperationalLines) Sch.enrichOperationalLines();
+      } catch (e) { console.warn("f7 place", e); }
       try { pushLinesToRotation(); } catch (e) { console.warn("push rotation", e); }
     };
     Sch.generate._bridged = true;
@@ -153,6 +206,7 @@
     wrapGenerate();
     hookAirfield();
     applyTitles();
+    if (Sch && Sch.initPlacement) Sch.initPlacement();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
