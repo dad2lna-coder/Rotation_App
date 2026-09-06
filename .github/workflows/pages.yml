@@ -26,15 +26,18 @@ jobs:
       - name: Bake demo into the live original HTML
         run: python3 tools/bake_into_original.py
 
-      - name: Commit baked original when it changed
+      - name: Apply BLADE chrome, keep theme toggle
+        run: python3 tools/apply_blade_ui.py
+
+      - name: Commit live HTML when it changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "original_file/RotationBuilder 1.html"
           if git diff --cached --quiet; then
-            echo "original already baked"
+            echo "original already current"
           else
-            git commit -m "Bake demo roster into live HTML"
+            git commit -m "Apply BLADE chrome and demo bake to live HTML"
             git push
           fi
 
