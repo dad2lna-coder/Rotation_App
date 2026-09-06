@@ -1,12 +1,9 @@
-# Rotation Builder
+# BLADE + Rotation
 
-Blade is the base console. Rotation joins it in this repo.
+One app in this repo. Blade is the console. Rotation is the F7 module.
 
-## Live app
+## Live
 
 https://dad2lna-coder.github.io/Rotation_App/
 
-[F7] Rotation is the working module. Dark / Light / Vivid is Rotation’s theme toggle on the Blade bar.
-
-Direct sheet (no shell):
-https://dad2lna-coder.github.io/Rotation_App/original_file/RotationBuilder%201.html
+F1–F6 staffing boards, F7 rotation sheet. Dark / Light / Vivid is Rotation’s theme toggle.
