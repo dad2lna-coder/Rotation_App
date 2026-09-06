@@ -67,18 +67,11 @@ def main():
     extra_scripts = """
   <script src="js/demo-data.js"></script>
   <script src="js/vendor/xlsx.js"></script>
-  <script src="js/core/01-foundation.js"></script>
-  <script src="js/core/02-roster.js"></script>
-  <script src="js/core/03-projections.js"></script>
-  <script src="js/engine/04-engine.js"></script>
-  <script src="js/ui/05-render.js"></script>
-  <script src="js/ui/06-theme.js"></script>
-  <script src="js/ui/07-editing.js"></script>
-  <script src="js/ui/08-config-ui.js"></script>
+  <script src="js/rotation-app.js"></script>
   <script src="js/merged-shell.js"></script>
   <script src="js/blade-rotation-bridge.js"></script>
 """
-    if "js/blade-rotation-bridge.js" not in html:
+    if "js/rotation-app.js" not in html:
         html = html.replace("</body>", extra_scripts + "</body>")
     html = html.replace("NAV: F1–F6", "NAV: F1–F7")
     html = html.replace("<title>BLADE Alpha Build</title>", "<title>BLADE + Rotation</title>")
