@@ -1,42 +1,42 @@
-# Rotation Builder - Organized Source Package
+# Rotation Builder
 
-This package is a structural decomposition of the supplied `RotationBuilder 1.html.txt`.
+Offline checkpoint rotation sheet builder. Open `index.html` locally after extracting scripts, or use the GitHub Pages test site.
 
-## Run
+## Test site (GitHub Pages)
 
-Open `index.html` in a browser. No build step is required.
+- Split app: https://dad2lna-coder.github.io/Rotation_App/
+- Original monolith fallback: https://dad2lna-coder.github.io/Rotation_App/original_file/RotationBuilder%201.html
+
+First Pages deploy uses GitHub Actions (`.github/workflows/pages.yml`). If the link 404s, open the repo **Settings → Pages**, set Source to **GitHub Actions**, and re-run the **Deploy GitHub Pages** workflow.
+
+## Run locally
+
+```bash
+python3 tools/extract_js.py .
+# then open index.html in a browser
+```
+
+No build step. Scripts stay classic (non-module) and load in the original order so shared globals keep working.
 
 ## Structure
 
 ```text
-RotationBuilder_organized/
-├── index.html
-├── css/
-│   └── styles.css
-├── js/
-│   ├── vendor/
-│   │   └── xlsx.js
-│   ├── core/
-│   │   ├── 01-foundation.js
-│   │   ├── 02-roster.js
-│   │   └── 03-projections.js
-│   ├── engine/
-│   │   └── 04-engine.js
-│   └── ui/
-│       ├── 05-render.js
-│       ├── 06-theme.js
-│       ├── 07-editing.js
-│       └── 08-config-ui.js
-├── docs/
-│   ├── ARCHITECTURE.md
-│   ├── EVALUATION.md
-│   └── MANIFEST.json
-└── original/
-    └── RotationBuilder 1.html.txt
+index.html
+css/styles.css
+js/vendor/xlsx.js          # extracted from the original file
+js/core/01-foundation.js
+js/core/02-roster.js
+js/core/03-projections.js
+js/engine/04-engine.js
+js/ui/05-render.js
+js/ui/06-theme.js
+js/ui/07-editing.js
+js/ui/08-config-ui.js
+docs/
+original_file/RotationBuilder 1.html
+tools/extract_js.py
 ```
 
 ## Refactor strategy
 
-This is a **low-risk structural split**, not a behavioral rewrite. The source's own section boundaries are preserved and the scripts are loaded in the same order as the original application.
-
-The JavaScript remains classic scripts rather than ES modules so the existing shared global state continues to work.
+Low-risk structural split, not a behavioral rewrite. Section boundaries from the original source are preserved.
