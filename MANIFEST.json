@@ -1,0 +1,24 @@
+{
+  "source": "RotationBuilder 1.html.txt",
+  "app_version": "1.0.0",
+  "strategy": "section-preserving structural split",
+  "load_order": [
+    "js/vendor/xlsx.js",
+    "js/core/01-foundation.js",
+    "js/core/02-roster.js",
+    "js/core/03-projections.js",
+    "js/engine/04-engine.js",
+    "js/ui/05-render.js",
+    "js/ui/06-theme.js",
+    "js/ui/07-editing.js",
+    "js/ui/08-config-ui.js"
+  ],
+  "metrics": {
+    "source_chars": 821962,
+    "source_lines": 3707,
+    "css_chars": 30108,
+    "vendor_chars": 639125,
+    "app_chars": 125782,
+    "named_functions": 101
+  }
+}
