@@ -30,7 +30,6 @@ jobs:
         run: |
           mkdir -p _site
           cp index.html _site/
-          # External classic scripts require script-src 'self' on Pages
           sed -i "s/script-src 'unsafe-inline'/script-src 'self' 'unsafe-inline'/" _site/index.html
           cp -r css _site/css
           cp -r js _site/js
@@ -41,6 +40,8 @@ jobs:
           cp "original_file/RotationBuilder 1.html" "_site/original_file/RotationBuilder 1.html"
 
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
