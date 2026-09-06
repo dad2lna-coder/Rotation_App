@@ -23,43 +23,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Bake demo into the live original HTML
-        run: python3 tools/bake_into_original.py
-
-      - name: Apply BLADE chrome helpers on standalone file
-        run: python3 tools/apply_blade_ui.py || true
-
-      - name: Embed hook for Blade shell
-        run: python3 tools/apply_embed.py
-
-      - name: Commit live HTML when it changed
+      - name: Bake demo and embed hooks
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "original_file/RotationBuilder 1.html"
-          if git diff --cached --quiet; then
-            echo "original already current"
-          else
-            git commit -m "Bake embed hook into live HTML"
-            git push
-          fi
+          python3 tools/bake_into_original.py || true
+          python3 tools/apply_embed.py || true
 
-      - name: Extract scripts from original monolith
+      - name: Extract Rotation scripts
         run: python3 tools/extract_js.py "$GITHUB_WORKSPACE"
 
-      - name: Bake demo roster into split JS
+      - name: Bake demo into extracted JS
         run: python3 tools/bake_demo.py || true
 
-      - name: Assemble site
+      - name: Build one Blade+Rotation app
+        run: python3 tools/build_one_app.py
+
+      - name: Copy Rotation runtime into site
         run: |
-          mkdir -p _site/css _site/js _site/original_file _site/docs
-          cp index.html _site/
-          cp css/blade-console.css _site/css/
-          cp js/blade-shell.js _site/js/
-          cp -r css _site/ 2>/dev/null || true
-          cp -r js _site/ 2>/dev/null || true
-          touch _site/.nojekyll
+          mkdir -p _site/js _site/original_file
+          cp -r js/vendor js/core js/engine js/ui _site/js/ 2>/dev/null || true
+          cp js/demo-data.js _site/js/ 2>/dev/null || true
           cp "original_file/RotationBuilder 1.html" "_site/original_file/RotationBuilder 1.html"
+          touch _site/.nojekyll
 
       - uses: actions/configure-pages@v5
         with:
