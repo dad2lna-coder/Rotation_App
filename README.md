@@ -1,42 +1,25 @@
 # Rotation Builder
 
-Offline checkpoint rotation sheet builder. Open `index.html` locally after extracting scripts, or use the GitHub Pages test site.
+Offline checkpoint rotation sheet builder.
 
-## Test site (GitHub Pages)
+## Live test (working now)
 
-- Split app: https://dad2lna-coder.github.io/Rotation_App/
-- Original monolith fallback: https://dad2lna-coder.github.io/Rotation_App/original_file/RotationBuilder%201.html
+GitHub Pages cannot be turned on by an app token. Use the original monolith via jsDelivr until Pages is enabled on the repo:
 
-First Pages deploy uses GitHub Actions (`.github/workflows/pages.yml`). If the link 404s, open the repo **Settings → Pages**, set Source to **GitHub Actions**, and re-run the **Deploy GitHub Pages** workflow.
+**https://cdn.jsdelivr.net/gh/dad2lna-coder/Rotation_App@main/original_file/RotationBuilder%201.html**
+
+That file is self-contained (HTML + CSS + JS + SheetJS). Upload roster/projections in the browser; nothing is sent to a server.
+
+After you set **Settings → Pages → Source: GitHub Actions** and re-run the workflow, the split app will be at:
+
+- https://dad2lna-coder.github.io/Rotation_App/
+- Fallback: https://dad2lna-coder.github.io/Rotation_App/original_file/RotationBuilder%201.html
 
 ## Run locally
 
 ```bash
 python3 tools/extract_js.py .
-# then open index.html in a browser
+# open index.html
 ```
 
-No build step. Scripts stay classic (non-module) and load in the original order so shared globals keep working.
-
-## Structure
-
-```text
-index.html
-css/styles.css
-js/vendor/xlsx.js          # extracted from the original file
-js/core/01-foundation.js
-js/core/02-roster.js
-js/core/03-projections.js
-js/engine/04-engine.js
-js/ui/05-render.js
-js/ui/06-theme.js
-js/ui/07-editing.js
-js/ui/08-config-ui.js
-docs/
-original_file/RotationBuilder 1.html
-tools/extract_js.py
-```
-
-## Refactor strategy
-
-Low-risk structural split, not a behavioral rewrite. Section boundaries from the original source are preserved.
+Or just open `original_file/RotationBuilder 1.html`.
