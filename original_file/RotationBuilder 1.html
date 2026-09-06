@@ -2,7 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; form-action 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'">
 <title>Rotation Builder</title>
 <!--BAKED-->
@@ -3800,6 +3800,12 @@ function boot(){
     if(!pj && window.RB_DEMO && RB_DEMO.proj){
       pj = RB_DEMO.proj; pm = RB_DEMO.projMeta;
     }
+    if((!r || !r.length) && window.RB_DEMO && RB_DEMO.roster){
+      r = RB_DEMO.roster; m = RB_DEMO.meta;
+    }
+    if(!pj && window.RB_DEMO && RB_DEMO.proj){
+      pj = RB_DEMO.proj; pm = RB_DEMO.projMeta;
+    }
     if(pj){ S.proj = pj; S.projMeta = pm || {}; }
     if(r && r.length){ S.roster = r; S.meta = m || S.meta;
       const d = (S.meta.dates||[]);
@@ -3810,6 +3816,10 @@ function boot(){
     fillTerms(); fillLocSelect(); renderAdmin(); wire(); refreshSaved();
     $("projInfo").innerHTML = projSummary();
     if(!$("iDate").value) $("iDate").value = todayKey();
+    if(S.roster && S.roster.length && $("iLoc") && !$("iLoc").value){
+      $("iLoc").value = "CKPT-A12";
+      $("iLoc").dispatchEvent(new Event("change"));
+    }
     if(S.roster && S.roster.length && $("iLoc") && !$("iLoc").value){
       $("iLoc").value = "CKPT-A12";
       $("iLoc").dispatchEvent(new Event("change"));
