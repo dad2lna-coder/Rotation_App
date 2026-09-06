@@ -1,16 +1,18 @@
 (function () {
   var Sch = window.Scheduler;
+  var DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   function $(id) { return document.getElementById(id); }
 
-  function isoFromStart(dayIndex) {
-    var el = $("cfg-start") || $("iDate");
-    var raw = el && el.value;
-    var d = raw ? new Date(raw + "T00:00:00") : new Date();
-    if (isNaN(d.getTime())) d = new Date();
-    d.setDate(d.getDate() + dayIndex);
-    var m = d.getMonth() + 1, day = d.getDate();
-    return d.getFullYear() + "-" + (m < 10 ? "0" : "") + m + "-" + (day < 10 ? "0" : "") + day;
+  function openRotationConfig() {
+    if (Sch && Sch.switchTab) Sch.switchTab("rotation");
+    var build = $("buildView"), admin = $("adminView"), side = $("sideBar");
+    if (build) build.classList.remove("on");
+    if (admin) admin.classList.add("on");
+    if (side) side.style.display = "none";
+    document.querySelectorAll("#tabSeg .tab").forEach(function (b) {
+      b.classList.toggle("on", b.getAttribute("data-v") === "admin");
+    });
   }
 
   function ensureFuncUi() {
@@ -40,13 +42,22 @@
     var bg = $("fc-pool-bag"); if (bg && +bg.value === 0) bg.value = "2";
   }
 
+  function applyTitles() {
+    var RS = window.S;
+    if (!RS || !RS.cfg || !RS.cfg.titles) return;
+    RS.cfg.titles["TSO/DFO"] = 1;
+    RS.cfg.titles["LTSO/DFO"] = 1;
+    RS.cfg.titles["STSO/DFO"] = 1;
+    RS.cfg.titles["TSO/BAG"] = 0;
+    RS.cfg.titles["LTSO/BAG"] = 0;
+  }
+
   function pushLinesToRotation() {
     if (!Sch || !Sch.state || !Sch.state.lines || !Sch.state.lines.length) return;
     var RS = window.S;
     var locEl = $("iLoc");
     var loc = (locEl && locEl.value) || "CKPT-A12";
     var rows = [];
-    var dates = {};
     Sch.state.lines.forEach(function (line) {
       var sched = Sch.state.schedule[line.id] || Sch.state.schedule[String(line.id)] || [];
       var duties = (Sch.state.functionRotation || {})[String(line.id)] || [];
@@ -56,21 +67,21 @@
       if (end <= start) end += 1440;
       var role = Sch.lineRoleKey ? Sch.lineRoleKey(line) : (line.empClass || "TSO");
       var shiftName = start < 12 * 60 ? "AM" : "PM";
-      sched.forEach(function (cell, di) {
-        if (cell !== "WORK") return;
-        var duty = duties[di] || line.function || "";
+      var weekLen = sched.length || 7;
+      for (var di = 0; di < weekLen; di++) {
+        if (sched[di] !== "WORK") continue;
+        var duty = duties[di] || duties[di % 7] || line.function || "";
         var title = role;
         if (duty === "DFO") title = role + "/DFO";
         if (duty === "BAG") title = role + "/BAG";
-        var date = isoFromStart(di);
-        dates[date] = true;
         rows.push({
-          k: "L" + line.id + "-" + di,
+          k: "L" + line.id,
           n: line.lineCode || ("Line " + String(line.id).padStart(3, "0")),
           ti: title,
           po: duty === "BAG" ? "BAG" : duty === "DFO" ? "DFO" : "TDC",
           lo: loc,
-          d: date,
+          d: "",
+          dow: di % 7,
           sh: shiftName,
           s: start,
           e: end,
@@ -78,21 +89,15 @@
           q: "1234Z",
           ab: [],
           tr: [],
-          nt: duty ? [duty] : []
+          nt: duty ? [duty + " " + DOW[di % 7]] : [DOW[di % 7]]
         });
-      });
+      }
     });
     if (!rows.length) return;
-    if (typeof RS === "object") {
+    applyTitles();
+    if (RS) {
       RS.roster = rows;
-      RS.meta = {
-        file: "(from Blade lines)",
-        rows: rows.length,
-        when: "blade-generate",
-        dates: Object.keys(dates).sort(),
-        unknown: {},
-        locs: {}
-      };
+      RS.meta = { file: "(Blade lines)", rows: rows.length, when: "blade-generate", dates: [], unknown: {}, locs: {} };
       RS.meta.locs[loc] = rows.length;
       if (typeof DB !== "undefined" && DB.set) {
         DB.set("roster", RS.roster);
@@ -100,19 +105,19 @@
       }
     }
     if ($("rosterInfo")) {
-      $("rosterInfo").innerHTML = "<b>" + rows.length + "</b> rows from Blade lines" +
-        "<br>" + Object.keys(dates).sort().join(", ");
+      $("rosterInfo").innerHTML = "<b>" + rows.length + "</b> Blade line-days · roster is lines · day of week, not calendar date";
     }
-    var first = Object.keys(dates).sort()[0];
-    if ($("iDate") && first) $("iDate").value = first;
+    if ($("iDate")) {
+      $("iDate").value = "";
+      var lab = $("iDate").previousElementSibling;
+      if (lab) lab.innerHTML = "Day of week (date unused)";
+    }
     if ($("iLoc")) {
       if (typeof fillLocSelect === "function") fillLocSelect();
       $("iLoc").value = loc;
       $("iLoc").dispatchEvent(new Event("change"));
     }
-    if (Sch.updateStatus) {
-      Sch.updateStatus("Lines → Rotation: " + rows.length + " checkpoint rows. Open [F7] and Generate Rotation.");
-    }
+    if (Sch.updateStatus) Sch.updateStatus("Lines are the roster. Open [F7], pick checkpoint + shift, Generate Rotation.");
   }
 
   function wrapGenerate() {
@@ -130,9 +135,24 @@
     Sch.generate._bridged = true;
   }
 
+  function hookAirfield() {
+    var btn = $("btn-airport-config");
+    if (!btn || btn._rotAirfield) return;
+    btn._rotAirfield = true;
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var modal = $("airport-config-modal");
+      if (modal) modal.style.display = "none";
+      openRotationConfig();
+    }, true);
+  }
+
   function boot() {
     ensureFuncUi();
     wrapGenerate();
+    hookAirfield();
+    applyTitles();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();

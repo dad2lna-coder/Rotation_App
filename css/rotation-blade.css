@@ -1,4 +1,3 @@
-/* Rotation module uses Blade console look */
 body.blade-shell #tab-rotation {
   height: calc(100vh - 8.4rem);
   padding: 0.75rem 0.85rem 2.8rem;
@@ -10,10 +9,25 @@ body.blade-shell #tab-rotation #app {
   background: transparent;
 }
 body.blade-shell #app .top,
-body.blade-shell #app .blade-foot,
-body.blade-shell #tabSeg,
+body.blade-shell #app .blade-foot { display: none !important; }
 body.blade-shell #themeSeg { display: none !important; }
-
+body.blade-shell #tabSeg {
+  display: flex !important;
+  gap: 0.4rem;
+  margin: 0 0 0.55rem;
+}
+body.blade-shell #tabSeg .tab {
+  background: transparent;
+  border: 1px solid #c48a18;
+  color: #e0a020;
+  text-transform: uppercase;
+  min-height: 2rem;
+  padding: 0 0.7rem;
+}
+body.blade-shell #tabSeg .tab.on {
+  background: #c48a18;
+  color: #1a1204;
+}
 body.blade-shell #tab-rotation .main {
   flex: 1;
   display: flex;
@@ -27,40 +41,6 @@ body.blade-shell #tab-rotation .side {
   display: flex;
   flex-direction: column;
 }
-body.blade-shell #tab-rotation .sideScroll { overflow: auto; padding: 0.7rem 0.8rem; }
-body.blade-shell #tab-rotation .grp {
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid #3a2a08;
-  padding: 0.55rem 0 0.7rem;
-  margin: 0;
-}
-body.blade-shell #tab-rotation .lbl,
-body.blade-shell #tab-rotation .section-title {
-  color: #3ad0c8;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.72rem;
-  font-weight: 400;
-}
-body.blade-shell #tab-rotation .btn,
-body.blade-shell #tab-rotation select,
-body.blade-shell #tab-rotation input,
-body.blade-shell #tab-rotation textarea {
-  border-radius: 0 !important;
-  font-family: "Consolas", "Lucida Console", "Courier New", monospace;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  background: #05080a;
-  border: 1px solid #c48a18;
-  color: #e0a020;
-}
-body.blade-shell #tab-rotation .btn.pri,
-body.blade-shell #tab-rotation #bGen {
-  background: #c48a18;
-  border-color: #e0a020;
-  color: #1a1204;
-}
 body.blade-shell #tab-rotation .work {
   flex: 1;
   min-width: 0;
@@ -68,17 +48,6 @@ body.blade-shell #tab-rotation .work {
   border: 1px solid #c48a18;
   overflow: auto;
 }
-body.blade-shell #tab-rotation .tools {
-  background: #070b0e;
-  border-bottom: 1px solid #c48a18;
-}
-body.blade-shell #tab-rotation .sideFoot {
-  border-top: 1px solid #c48a18;
-  padding: 0.55rem 0.7rem;
-}
-body.blade-shell #tab-rotation .hint,
-body.blade-shell #tab-rotation .muted { color: #9a7018; }
-
 @media (max-width: 720px) {
   body.blade-shell #tab-rotation .main { flex-direction: column; }
   body.blade-shell #tab-rotation .side { width: 100%; max-height: 42vh; }
