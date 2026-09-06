@@ -1,15 +1,12 @@
 # Rotation Builder
 
-Offline checkpoint rotation sheet builder.
+Blade is the base console. Rotation joins it in this repo.
 
 ## Live app
 
+https://dad2lna-coder.github.io/Rotation_App/
+
+[F7] Rotation is the working module. Dark / Light / Vivid is Rotation’s theme toggle on the Blade bar.
+
+Direct sheet (no shell):
 https://dad2lna-coder.github.io/Rotation_App/original_file/RotationBuilder%201.html
-
-Click **Load demo roster**, then **Generate Rotation**. Date 2026-09-06, location CKPT-A12, shift AM are filled in for you.
-
-Everything stays in the browser. Nothing is sent to a server.
-
-## Run locally
-
-Open `original_file/RotationBuilder 1.html` in a browser.

@@ -1,443 +1,49 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" class="console">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; form-action 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'">
-  <title>Rotation Builder</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>BLADE / Rotation</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="stylesheet" href="css/blade-console.css" />
 </head>
-<body>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-<symbol id="i-logo" viewBox="0 0 24 24"><path d="M12 3l7 4.5v9L12 21l-7-4.5v-9L12 3z"/><path d="M12 8.2l3.4 2.2v4.4L12 17l-3.4-2.2v-4.4L12 8.2z"/></symbol>
-<symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 17v2a1 1 0 001 1h14a1 1 0 001-1v-2"/></symbol>
-<symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
-<symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-5.7 7-11a7 7 0 10-14 0c0 5.3 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></symbol>
-<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></symbol>
-<symbol id="i-lanes" viewBox="0 0 24 24"><path d="M4 4v16M10 4v16M14 4v16M20 4v16"/></symbol>
-<symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L4.5 13.5H11L10 22l8.5-11.5H12L13 2z"/></symbol>
-<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 10-2.3 5.7"/><path d="M20 5v6h-6"/></symbol>
-<symbol id="i-redo" viewBox="0 0 24 24"><path d="M4 13a8 8 0 1114 5.3"/><path d="M4 19v-6h6"/></symbol>
-<symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4.5L19 9.5a2.1 2.1 0 10-3-3L5.5 17V20z"/></symbol>
-<symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M8 3v6h7M8 21v-6h8v6"/></symbol>
-<symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 4v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/></symbol>
-<symbol id="i-print" viewBox="0 0 24 24"><path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 15h10v6H7z"/></symbol>
-<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 6h16M9 6V4h6v2M6 6l1 14h10l1-14"/></symbol>
-<symbol id="i-eraser" viewBox="0 0 24 24"><path d="M8 20H4l-1-4 11-11a2 2 0 013 0l4 4a2 2 0 010 3L12 20H8z"/><path d="M9 12l5 5"/></symbol>
-<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
-<symbol id="i-userplus" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M18 8v6M15 11h6"/></symbol>
-<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
-<symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
-<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 019.5 4a8.5 8.5 0 1010.5 10.5z"/></symbol>
-<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.2 4.2l1.5 1.5M18.3 18.3l1.5 1.5M2 12h2M20 12h2M4.2 19.8l1.5-1.5M18.3 5.7l1.5-1.5"/></symbol>
-<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/><path d="M18.5 16l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2z"/></symbol>
-<symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
-<symbol id="i-slider" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
-<symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 16H3l9-16z"/><path d="M12 10v4M12 17.4v.2"/></symbol>
-<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8.2v.2"/></symbol>
-<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 13l4.5 4.5L19 7"/></symbol>
-<symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></symbol>
-<symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
-<symbol id="i-badge" viewBox="0 0 24 24"><circle cx="12" cy="9" r="5"/><path d="M8.5 13.5L7 21l5-2.5L17 21l-1.5-7.5"/></symbol>
-<symbol id="i-map" viewBox="0 0 24 24"><path d="M9 4L3 6.5v14L9 18l6 2.5 6-2.5v-14L15 6.5 9 4z"/><path d="M9 4v14M15 6.5v14"/></symbol>
-<symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="7.5" r="1.4"/></symbol>
-<symbol id="i-cols" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></symbol>
-<symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></symbol>
-<symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z"/><path d="M14 3v5h5"/></symbol>
-<symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
-<symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2.5h8a2 2 0 012 2V18a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></symbol>
-</defs></svg>
-
-<div id="app">
- <!-- ===================== TOP BAR ===================== -->
- <header class="top">
-  <div class="brand">
-   <span class="logo"><svg class="ic lg"><use href="#i-logo"/></svg></span>
-   Rotation Builder
-  </div>
-  <span class="badge" id="offBadge"><span class="dot"></span>Offline</span>
-
-  <div class="topspace"></div>
-
-  <div class="seg theme" id="themeSeg" title="Appearance">
-   <button data-theme="dark"  title="Dark"><svg class="ic sm"><use href="#i-moon"/></svg></button>
-   <button data-theme="light" title="Light"><svg class="ic sm"><use href="#i-sun"/></svg></button>
-   <button data-theme="vivid" title="Vivid"><svg class="ic sm"><use href="#i-spark"/></svg></button>
-  </div>
-
-  <div class="seg pri" id="tabSeg">
-   <button class="tab on" data-v="build"><svg class="ic sm"><use href="#i-grid"/></svg>Build Sheet</button>
-   <button class="tab" data-v="admin"><svg class="ic sm"><use href="#i-slider"/></svg>Configuration</button>
-  </div>
- </header>
-
- <div class="main">
-  <!-- ===================== SIDEBAR ===================== -->
-  <aside class="side" id="sideBar">
-   <div class="sideScroll">
-
-    <div class="grp">
-     <span class="lbl"><svg class="ic sm"><use href="#i-db"/></svg>Roster Data</span>
-     <input type="file" id="fRoster" accept=".xlsx,.xls,.csv">
-     <button class="btn wide" id="bUpload"><svg class="ic sm"><use href="#i-upload"/></svg>Upload Roster</button>
-     <div class="hint" id="rosterInfo">No roster loaded.</div>
+<body class="console-skin">
+  <header class="topbar">
+    <div class="console-mast">
+      <div class="brand">BLADE AIRPORT OPS<span>ROTATION MODULE</span></div>
+      <div class="console-meta">AIRPORT: <b id="console-airport">DFW</b></div>
+      <div class="console-meta">SYSTEM TIME: <b id="console-time">--:--:--</b></div>
+      <div class="console-meta">DATE: <b id="console-date">--/--/----</b></div>
+      <div class="console-status-chip">STATUS: READY</div>
     </div>
-
-    <div class="grp">
-     <span class="lbl"><svg class="ic sm"><use href="#i-chart"/></svg>Passenger Projections</span>
-     <input type="file" id="fProj" accept=".xlsx,.xls,.csv">
-     <button class="btn wide sm" id="bProj"><svg class="ic sm"><use href="#i-upload"/></svg>Upload Projections</button>
-     <div class="hint" id="projInfo">None loaded — lane demand will not be checked.</div>
-    </div>
-
-    <div class="grp">
-     <span class="lbl"><svg class="ic sm"><use href="#i-cal"/></svg>Date</span>
-     <input type="date" id="iDate">
-    </div>
-
-    <div class="grp">
-     <span class="lbl"><svg class="ic sm"><use href="#i-pin"/></svg>Terminal &amp; Location</span>
-     <select id="iTerm"><option value="">All terminals</option></select>
-     <div style="height:8px"></div>
-     <select id="iLoc"><option value="">Select location…</option></select>
-    </div>
-
-    <div class="grp">
-     <span class="lbl"><svg class="ic sm"><use href="#i-clock"/></svg>Shift</span>
-     <div class="row">
-      <select id="iShift"><option value="AM">AM</option><option value="PM">PM</option></select>
-      <select id="iSeed"><option value="">Random</option></select>
-     </div>
-     <div class="hint" id="shiftHint">AM ends 11:00 · PM starts 11:30</div>
-    </div>
-
-    <div class="grp">
-     <span class="lbl"><svg class="ic sm"><use href="#i-clock"/></svg>Sheet Window — override</span>
-     <div class="row"><input type="time" id="iStart" step="1800"><input type="time" id="iEnd" step="1800"></div>
-     <div class="hint">Blank uses the location's own hours.</div>
-    </div>
-
-    <div class="grp">
-     <span class="lbl"><svg class="ic sm"><use href="#i-lanes"/></svg>Active Lanes</span>
-     <div id="laneToggles" class="hint">Select a location.</div>
-    </div>
-
-    <div class="grp">
-     <span class="lbl"><svg class="ic sm"><use href="#i-edit"/></svg>Roster Changes</span>
-     <button class="btn wide sm" id="bAddOfficer" disabled><svg class="ic sm"><use href="#i-userplus"/></svg>Add Officer to Sheet</button>
-     <div style="height:8px"></div>
-     <button class="btn wide sm" id="bAdjust" disabled><svg class="ic sm"><use href="#i-slider"/></svg>Absences · Training · Restrictions</button>
-    </div>
-
-    <div class="grp">
-     <span class="lbl"><svg class="ic sm"><use href="#i-folder"/></svg>Saved Sheets</span>
-     <select id="iSaved"><option value="">— saved sheets —</option></select>
-     <div class="row" style="margin-top:8px">
-      <button class="btn sm" id="bLoad">Load</button>
-      <button class="btn sm" id="bSave" disabled><svg class="ic sm"><use href="#i-save"/></svg>Save</button>
-      <button class="btn sm danger" id="bDelSheet" style="flex:0 0 auto"><svg class="ic sm"><use href="#i-trash"/></svg></button>
-     </div>
-    </div>
-
-   </div>
-
-   <div class="sideFoot">
-    <button class="btn pri wide lg" id="bGen"><svg class="ic"><use href="#i-bolt"/></svg>Generate Rotation</button>
-    <div class="row" style="margin-top:9px">
-     <button class="btn sm" id="bReroll" disabled><svg class="ic sm"><use href="#i-refresh"/></svg>Reroll</button>
-     <button class="btn sm" id="bResolve" disabled><svg class="ic sm"><use href="#i-redo"/></svg>Re-solve</button>
-    </div>
-   </div>
-  </aside>
-
-  <!-- ===================== WORK AREA ===================== -->
-  <div class="work">
-
-   <!-- ---------- BUILD ---------- -->
-   <section class="view on" id="buildView">
-    <div class="tools">
-     <div class="meta" id="sheetMeta"><span class="pill">No sheet</span></div>
-     <button class="btn sm" id="bXlsx" disabled><svg class="ic sm"><use href="#i-dl"/></svg>Excel</button>
-     <button class="btn sm" id="bCsv" disabled><svg class="ic sm"><use href="#i-dl"/></svg>CSV</button>
-     <button class="btn sm" id="bPrint" disabled><svg class="ic sm"><use href="#i-print"/></svg>Print</button>
-     <div class="sep"></div>
-     <button class="btn sm gho" id="bClearMan" disabled><svg class="ic sm"><use href="#i-eraser"/></svg>Clear Manual</button>
-    </div>
-
-    <div class="scroll" id="sheetWrap">
-     <div id="printHead"></div>
-     <div id="sheetLegend" style="display:none"></div>
-     <div class="empty" id="emptyState">
-      <div class="eic"><svg class="ic" style="width:28px;height:28px"><use href="#i-grid"/></svg></div>
-      <h3>No rotation generated</h3>
-      <p>Upload a roster, then pick a date, location and shift. The tool builds the ring rotation, schedules breaks, enforces gender pairing at Body Scanner and Z-qual on CT lanes, then flags anything it could not satisfy.</p>
-     </div>
-     <div id="printLegend"></div>
-    </div>
-
-    <div class="legend" id="legendBar" style="display:none">
-     <div class="lg"><span class="sw" style="background:var(--cell)"></span>Assigned</div>
-     <div class="lg"><span class="sw" style="background:var(--brkB);border-color:var(--brkF)"></span>B — Break</div>
-     <div class="lg"><span class="sw" style="background:var(--trnB);border-color:var(--trnF)"></span>TRN — Training</div>
-     <div class="lg"><span class="sw" style="background:var(--lvB)"></span>LV — Leave / Call-off</div>
-     <div class="lg"><span class="sw" style="background:var(--soB);border-color:var(--soF)"></span>SO — Body Scanner</div>
-     <div class="lg"><span class="sw" style="background:var(--vioB);border-color:var(--vioF)"></span>Rule violation</div>
-     <div class="lg"><span class="sw" style="box-shadow:inset 0 0 0 2px var(--manOut)"></span>Manual edit</div>
-     <div class="lg"><span class="sw" style="background:var(--offB)"></span>Off shift</div>
-     <div class="lg" style="margin-left:auto;color:var(--tx2)">Click any cell to change the position.</div>
-    </div>
-
-    <div class="diag" id="diagPanel" style="display:none">
-     <div class="diagHead" id="diagToggle">
-      <svg class="ic sm" style="color:var(--tx3)"><use href="#i-info"/></svg>
-      <h4>Diagnostics</h4>
-      <span id="diagCount" class="scount"></span>
-      <svg class="ic sm chev"><use href="#i-chev"/></svg>
-     </div>
-     <div class="diagBody" id="diagList"></div>
-    </div>
-   </section>
-
-   <!-- ---------- ADMIN ---------- -->
-   <section class="view" id="adminView">
-    <div class="tools">
-     <div class="meta"><span class="pill ac"><svg class="ic sm"><use href="#i-lock"/></svg>Changes apply immediately and persist locally</span></div>
-     <button class="btn sm" id="bExpCfg"><svg class="ic sm"><use href="#i-dl"/></svg>Export Config</button>
-     <button class="btn sm" id="bImpCfg"><svg class="ic sm"><use href="#i-upload"/></svg>Import Config</button>
-     <button class="btn sm pri" id="bBuildTool"><svg class="ic sm"><use href="#i-box"/></svg>Export Configured Tool</button>
-     <div class="sep"></div>
-     <button class="btn sm danger" id="bResetCfg">Reset Defaults</button>
-     <input type="file" id="fCfg" accept=".json">
-    </div>
-
-    <div class="adm"><div class="admWrap">
-
-     <div class="card">
-      <h3><svg class="ic"><use href="#i-slider"/></svg>Rotation Rules</h3>
-      <div class="sub">Core engine behaviour. Every rule here warns rather than blocks — any cell stays editable.</div>
-      <div class="g4">
-       <div><span class="lbl">Slot length (min)</span><input type="number" id="cSlot" min="5" max="60" step="5"></div>
-       <div><span class="lbl">AM last column</span><input type="time" id="cSeamAM" step="1800"></div>
-       <div><span class="lbl">PM first column</span><input type="time" id="cSeamPM" step="1800"></div>
-       <div><span class="lbl">Females per modset</span><input type="number" id="cFem" min="0" max="12"></div>
+    <div class="topbar-actions">
+      <div id="rot-theme-seg" class="rot-theme-seg" title="Rotation appearance">
+        <button type="button" data-theme="dark">Dark</button>
+        <button type="button" data-theme="light">Light</button>
+        <button type="button" data-theme="vivid">Vivid</button>
       </div>
-      <div class="g4" style="margin-top:13px">
-       <div><span class="lbl">Break target / lane</span><input type="number" id="cBrkT" min="1" max="4"></div>
-       <div><span class="lbl">Break max / lane</span><input type="number" id="cBrkM" min="1" max="6"></div>
-       <div><span class="lbl">Hours for 2nd break</span><input type="number" id="cBrkH" min="1" max="12" step=".5"></div>
-       <div><span class="lbl">Lane close threshold</span><input type="number" id="cLaneMin" min="1" max="12"></div>
-      </div>
-      <div style="margin-top:14px">
-       <label class="chk"><input type="checkbox" id="cAllowRepeat"> Allow consecutive same position when otherwise infeasible</label>
-       <label class="chk"><input type="checkbox" id="cBreakClears"> Break clears position history (may return to same seat after B)</label>
-       <label class="chk"><input type="checkbox" id="cFemScale"> Female minimum scales down when Body Scanner is unstaffed</label>
-       <label class="chk"><input type="checkbox" id="cPinSingle"> Pin sole eligible officer to constrained position (flagged)</label>
-       <label class="chk"><input type="checkbox" id="cStrictShift"> Strict shift matching — an AM sheet shows AM officers only, PM shows PM only</label>
-      </div>
-      <div style="margin-top:14px">
-       <span class="lbl">Shortfall drop order — last filled drops first</span>
-       <input type="text" id="cDrop">
-       <div class="hint">Comma-separated position families in fill priority. Default: M,X,D,P,EXIT,KCM,T,SO</div>
-      </div>
-      <div style="margin-top:13px">
-       <span class="lbl">Ring order — modset rotation sequence</span>
-       <input type="text" id="cRing">
-       <div class="hint">A = lane A of the modset, B = lane B. SO-A / SO-B are the two Body Scanner seats (both print as SO#).</div>
-      </div>
-     </div>
-
-     <div class="card">
-      <h3><svg class="ic"><use href="#i-badge"/></svg>Job Titles in Rotation</h3>
-      <div class="sub">Titles from the roster that get placed in the ring. Untick to exclude from generated sheets — they can still be added by hand.</div>
-      <div id="titleList" class="g4"></div>
-     </div>
-
-     <div class="card">
-      <h3><svg class="ic"><use href="#i-map"/></svg>Locations, Lanes &amp; Modsets</h3>
-      <div class="sub">Lanes marked CT require the Z qualification on that lane's own seats (TDC / Divest / X-ray / PSO). Shared Body Scanner and WTMD seats are not Z-gated.</div>
-      <div id="locList"></div>
-      <button class="btn sm" id="bAddLoc" style="margin-top:10px"><svg class="ic sm"><use href="#i-plus"/></svg>Add Location</button>
-     </div>
-
-     <div class="card">
-      <h3><svg class="ic"><use href="#i-grid"/></svg>Position Codes</h3>
-      <div class="sub">Scope <b>lane</b> = one per lane, numbered by lane. Scope <b>modset</b> = one per modset, numbered by modset. Scope <b>site</b> = one per location.</div>
-      <table class="dt" id="posTable"></table>
-      <button class="btn sm" id="bAddPos" style="margin-top:10px"><svg class="ic sm"><use href="#i-plus"/></svg>Add Position</button>
-     </div>
-
-     <div class="card">
-      <h3><svg class="ic"><use href="#i-tag"/></svg>Qualifications</h3>
-      <div class="sub">Single-character codes parsed from the roster's Quals column. Requirements per position can be set here; only Z-on-CT-lanes is enforced by default.</div>
-      <div id="qualList" style="margin-bottom:13px"></div>
-      <div class="row" style="max-width:340px">
-       <input type="text" id="iNewQual" maxlength="2" placeholder="New code">
-       <button class="btn sm" id="bAddQual"><svg class="ic sm"><use href="#i-plus"/></svg>Add</button>
-      </div>
-      <div style="margin-top:18px">
-       <span class="lbl">Position Qualification Requirements</span>
-       <table class="dt" id="qualMapTable"></table>
-      </div>
-      <div style="margin-top:18px">
-       <span class="lbl">Unrecognized characters found in roster</span>
-       <div id="unkQuals" class="hint">Upload a roster to scan.</div>
-      </div>
-     </div>
-
-     <div class="card">
-      <h3><svg class="ic"><use href="#i-chart"/></svg>Passenger Projections</h3>
-      <div class="sub">Turns an hourly passenger forecast into a per-hour lane requirement, then compares it with the lanes you have open and the staff you have on the floor.</div>
-      <div class="g4">
-       <div><span class="lbl">Counting mode</span>
-        <select id="pMode">
-         <option value="standard">Standard only</option>
-         <option value="combined">Standard + PreCheck together</option>
-         <option value="separate">Standard and PreCheck separately</option>
-        </select></div>
-       <div><span class="lbl">Passengers per lane / hour</span><input type="number" id="pPax" min="20" max="600" step="10"></div>
-       <div><span class="lbl">PreCheck per lane / hour</span><input type="number" id="pPre" min="20" max="900" step="10"></div>
-       <div><span class="lbl">Peak factor</span><input type="number" id="pPeak" min="1" max="2" step="0.05"></div>
-      </div>
-      <div class="g4" style="margin-top:13px">
-       <div><span class="lbl">Minimum lanes open</span><input type="number" id="pMin" min="0" max="6"></div>
-       <div><span class="lbl">Officers — first lane</span><input type="number" id="pFirst" min="1" max="12"></div>
-       <div><span class="lbl">Officers — each extra lane</span><input type="number" id="pExtra" min="1" max="12"></div>
-       <div><span class="lbl">Loaded</span><input type="text" id="pLoaded" readonly></div>
-      </div>
-      <div class="hint" style="margin-top:12px" id="pExplain"></div>
-      <div style="margin-top:16px">
-       <span class="lbl">Projections file columns</span>
-       <div class="g3" id="pMapList"></div>
-      </div>
-      <div class="g2" style="margin-top:13px;max-width:520px">
-       <div><span class="lbl">Standard metric contains</span><input type="text" id="pStdKey"></div>
-       <div><span class="lbl">PreCheck metric contains</span><input type="text" id="pPreKey"></div>
-      </div>
-     </div>
-
-     <div class="card">
-      <h3><svg class="ic"><use href="#i-cols"/></svg>Column Mapping</h3>
-      <div class="sub">Header names to read from the roster workbook. Update here if the source file's headers change — no code edit needed.</div>
-      <div class="g3" id="mapList"></div>
-     </div>
-
-     <div class="card">
-      <h3><svg class="ic"><use href="#i-pin"/></svg>Location Name Aliases</h3>
-      <div class="sub">Roster spellings normalised to canonical IDs. Hyphen/space and zero-padding are handled automatically; add explicit overrides here.</div>
-      <table class="dt" id="aliasTable"></table>
-      <div class="row" style="max-width:520px;margin-top:10px">
-       <input type="text" id="iAliasFrom" placeholder="Roster spelling"><input type="text" id="iAliasTo" placeholder="Canonical ID">
-       <button class="btn sm" id="bAddAlias" style="flex:0 0 auto"><svg class="ic sm"><use href="#i-plus"/></svg>Add</button>
-      </div>
-     </div>
-
-     <div class="card">
-      <h3><svg class="ic"><use href="#i-lock"/></svg>Persistent Restrictions</h3>
-      <div class="sub">Bound to KronosID, so they survive roster re-uploads. A restricted officer is pinned to their allowed positions and excluded from lane minimums; the solver covers their breaks with unrestricted staff.</div>
-      <table class="dt" id="restTable"></table>
-      <div class="hint" id="restEmpty">None set. Add from the Absences · Training · Restrictions dialog.</div>
-     </div>
-
-     <div class="card">
-      <h3><svg class="ic"><use href="#i-db"/></svg>Data &amp; Storage</h3>
-      <div class="sub">Everything lives in this browser only. Nothing is transmitted; the file has no network permissions.</div>
-      <div class="row" style="max-width:620px">
-       <button class="btn sm" id="bExpAll"><svg class="ic sm"><use href="#i-dl"/></svg>Export Briefcase</button>
-       <button class="btn sm" id="bImpAll"><svg class="ic sm"><use href="#i-upload"/></svg>Import Briefcase</button>
-       <button class="btn sm danger" id="bWipe"><svg class="ic sm"><use href="#i-trash"/></svg>Wipe Local Data</button>
-      </div>
-      <input type="file" id="fAll" accept=".json">
-      <div class="hint" id="storeInfo" style="margin-top:12px"></div>
-     </div>
-
-    </div></div>
-   </section>
-  </div>
- </div>
-</div>
-
-<!-- ===================== MODALS ===================== -->
-<div class="ov" id="ovAdj">
- <div class="mod wide">
-  <div class="mh"><svg class="ic"><use href="#i-slider"/></svg><h3>Absences · Training · Restrictions</h3><button class="x" data-close><svg class="ic"><use href="#i-x"/></svg></button></div>
-  <div class="mb">
-   <div class="hint" style="margin-bottom:14px">Leave, call-offs and shift trades already read from the roster's Remarks column. Use this for anything not in the file — late callouts, training added after publish, or temporary restrictions.</div>
-   <table class="dt" id="adjTable"></table>
-  </div>
-  <div class="mf"><button class="btn" data-close>Close</button><button class="btn pri" id="bAdjApply"><svg class="ic sm"><use href="#i-redo"/></svg>Apply &amp; Re-solve</button></div>
- </div>
-</div>
-
-<div class="ov" id="ovAdd">
- <div class="mod wide">
-  <div class="mh"><svg class="ic"><use href="#i-userplus"/></svg><h3>Add Officer to Sheet</h3><button class="x" data-close><svg class="ic"><use href="#i-x"/></svg></button></div>
-  <div class="mb">
-   <div class="seg" id="addSeg" style="margin-bottom:16px">
-    <button class="on" data-add="roster">From another location</button>
-    <button data-add="manual">Enter manually</button>
-   </div>
-
-   <div id="addRoster">
-    <div class="row" style="margin-bottom:12px">
-     <input type="text" id="addSearch" placeholder="Search name, title or qualification…">
-     <select id="addSrcLoc" style="max-width:230px"><option value="">All other locations</option></select>
     </div>
-    <div class="pickList" id="addList"></div>
-    <div class="hint" id="addCount"></div>
-   </div>
-
-   <div id="addManual" style="display:none">
-    <div class="g3">
-     <div><span class="lbl">Name</span><input type="text" id="amName" placeholder="Last, First"></div>
-     <div><span class="lbl">Job title</span><input type="text" id="amTitle" value="TSO"></div>
-     <div><span class="lbl">Sex</span><select id="amSex"><option value="M">M</option><option value="F">F</option></select></div>
-    </div>
-    <div class="g3" style="margin-top:13px">
-     <div><span class="lbl">Quals</span><input type="text" id="amQuals" placeholder="e.g. AKSTVZ"></div>
-     <div><span class="lbl">Start</span><input type="time" id="amStart" step="1800"></div>
-     <div><span class="lbl">End</span><input type="time" id="amEnd" step="1800"></div>
-    </div>
-    <div class="g3" style="margin-top:13px">
-     <div><span class="lbl">Assign to modset</span><select id="amMod"></select></div>
-     <div style="grid-column:span 2"><span class="lbl">Employee ID (optional)</span><input type="text" id="amId" placeholder="KronosID — leave blank to auto-generate"></div>
-    </div>
-    <div class="hint" style="margin-top:12px">Manually added officers are stored with the sheet and survive Re-solve and Save. Blank times default to the full sheet window.</div>
-   </div>
-
-   <div style="margin-top:18px">
-    <span class="lbl">Added to this sheet</span>
-    <div id="addedList" class="hint">None yet.</div>
-   </div>
-  </div>
-  <div class="mf"><button class="btn" data-close>Close</button><button class="btn pri" id="bAddApply"><svg class="ic sm"><use href="#i-plus"/></svg>Add &amp; Re-solve</button></div>
- </div>
-</div>
-
-<div class="ov" id="ovLoc">
- <div class="mod wide">
-  <div class="mh"><svg class="ic"><use href="#i-map"/></svg><h3 id="locModTitle">Location</h3><button class="x" data-close><svg class="ic"><use href="#i-x"/></svg></button></div>
-  <div class="mb" id="locModBody"></div>
-  <div class="mf"><button class="btn" data-close>Cancel</button><button class="btn pri" id="bLocSave"><svg class="ic sm"><use href="#i-save"/></svg>Save Location</button></div>
- </div>
-</div>
-
-<div class="ov" id="ovConfirm">
- <div class="mod" style="max-width:440px">
-  <div class="mh"><svg class="ic" style="color:var(--warn)"><use href="#i-alert"/></svg><h3 id="cfTitle">Confirm</h3></div>
-  <div class="mb" id="cfBody"></div>
-  <div class="mf"><button class="btn" data-close>Cancel</button><button class="btn pri" id="bCfOk">Confirm</button></div>
- </div>
-</div>
-
-<div class="toast" id="toast"></div>
-<script src="js/vendor/xlsx.js"></script>
-<script src="js/core/01-foundation.js"></script>
-<script src="js/core/02-roster.js"></script>
-<script src="js/core/03-projections.js"></script>
-<script src="js/engine/04-engine.js"></script>
-<script src="js/ui/05-render.js"></script>
-<script src="js/ui/06-theme.js"></script>
-<script src="js/ui/07-editing.js"></script>
-<script src="js/ui/08-config-ui.js"></script>
+  </header>
+  <nav class="tabs">
+    <button class="tab-btn" data-tab="setup">[F1] SETUP</button>
+    <button class="tab-btn active" data-tab="rotation">[F7] ROTATION</button>
+  </nav>
+  <main>
+    <section class="panel" id="tab-setup">
+      <div class="card">
+        <div class="section-title">BLADE base</div>
+        <p class="muted">This repo is the merge point. Blade is the console. Rotation joins as the F7 module.</p>
+      </div>
+    </section>
+    <section class="panel active" id="tab-rotation">
+      <iframe id="rotation-frame" class="rotation-frame" title="Rotation Builder" src="original_file/RotationBuilder%201.html?embed=1"></iframe>
+    </section>
+  </main>
+  <footer class="console-footer">
+    <span>SYSTEM: <b>READY</b></span>
+    <span>NAV: F1 SETUP · F7 ROTATION</span>
+    <span>THEME: ROTATION DARK / LIGHT / VIVID</span>
+  </footer>
+  <script src="js/blade-shell.js"></script>
 </body>
 </html>
