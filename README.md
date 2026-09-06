@@ -2,14 +2,13 @@
 
 Offline checkpoint rotation sheet builder.
 
-## Live app
+Gold working copy: `original_file/RotationBuilder 1.html`
 
-https://dad2lna-coder.github.io/Rotation_App/original_file/RotationBuilder%201.html
+## Step 2 (current)
 
-Click **Load demo roster**, then **Generate Rotation**. Date 2026-09-06, location CKPT-A12, shift AM are filled in for you.
+- Seat eligibility uses bid-line function (PAX / DFO / BAG). Letter quals paused.
+- BAG lines stay out of the checkpoint ring.
+- Generate this day or the Sun–Sat week around the selected date.
+- Shared mod-set model in `js/core/00-modset-model.js` — this is the structure BLADE should store.
 
-Everything stays in the browser. Nothing is sent to a server.
-
-## Run locally
-
-Open `original_file/RotationBuilder 1.html` in a browser.
+`Rotation.rosterFromBlade(payload, { location, startDate })` maps BLADE lines to roster rows.
