@@ -21,28 +21,55 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Rotation repo
+        uses: actions/checkout@v4
+        with:
+          path: rot
 
-      - name: Bake demo and embed hooks
+      - name: Checkout Blade repo
+        uses: actions/checkout@v4
+        with:
+          repository: dad2lna-coder/BLADE_Alpha
+          path: blade
+
+      - name: Copy Blade into Rotation (this is the merge)
+        run: |
+          cp -a blade/css/. rot/css/
+          mkdir -p rot/js rot/lib
+          cp -a blade/js/. rot/js/
+          cp -a blade/lib/. rot/lib/ || true
+          cp blade/index.html rot/index.html
+
+      - name: Bake rotation engine pieces
+        working-directory: rot
         run: |
           python3 tools/bake_into_original.py || true
-          python3 tools/apply_embed.py || true
+          python3 tools/extract_js.py "$GITHUB_WORKSPACE/rot"
+          python3 tools/bake_demo.py || true
+          python3 tools/join_rotation.py
 
-      - name: Extract Rotation scripts
-        run: python3 tools/extract_js.py "$GITHUB_WORKSPACE"
-
-      - name: Bake demo into extracted JS
-        run: python3 tools/bake_demo.py || true
-
-      - name: Build one Blade+Rotation app
-        run: python3 tools/build_one_app.py
-
-      - name: Copy Rotation runtime into site
+      - name: Commit merged Blade+Rotation tree
+        working-directory: rot
         run: |
-          mkdir -p _site/js _site/original_file
-          cp -r js/vendor js/core js/engine js/ui _site/js/ 2>/dev/null || true
-          cp js/demo-data.js _site/js/ 2>/dev/null || true
-          cp "original_file/RotationBuilder 1.html" "_site/original_file/RotationBuilder 1.html"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html css js lib
+          if git diff --cached --quiet; then
+            echo "tree already merged"
+          else
+            git commit -m "Merge Blade project into Rotation repo (Rotation is F7)"
+            git push
+          fi
+
+      - name: Assemble Pages site
+        run: |
+          mkdir -p _site
+          cp -a rot/index.html _site/
+          cp -a rot/css _site/
+          cp -a rot/js _site/
+          cp -a rot/lib _site/ || mkdir -p _site/lib
+          mkdir -p _site/original_file
+          cp "rot/original_file/RotationBuilder 1.html" "_site/original_file/" || true
           touch _site/.nojekyll
 
       - uses: actions/configure-pages@v5
