@@ -1,0 +1,6 @@
+{
+  "cleanUrls": false,
+  "rewrites": [
+    { "source": "/", "destination": "/original_file/RotationBuilder 1.html" }
+  ]
+}
