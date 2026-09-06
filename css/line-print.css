@@ -1,0 +1,33 @@
+/* Lines tab + print colors */
+.cell-rdo {
+  background: #2e75b6 !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  font-weight: 700;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+}
+
+/* BAG = light red */
+.cell-bag,
+.cell-function-duty.cell-bag,
+td.cell-bag,
+td.cell-work.cell-bag {
+  background: #f4b4b4 !important;
+  color: #111111 !important;
+  font-weight: 700;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+}
+
+/* DFO = light yellow */
+.cell-dfo,
+.cell-function-duty.cell-dfo,
+td.cell-dfo,
+td.cell-work.cell-dfo {
+  background: #fff3a8 !important;
+  color: #111111 !important;
+  font-weight: 700;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+}

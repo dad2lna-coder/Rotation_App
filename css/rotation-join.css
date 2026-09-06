@@ -1,0 +1,41 @@
+/* Rotation module inside BLADE */
+.rot-theme-seg {
+  display: inline-flex;
+  border: 1px solid var(--border, #c48a18);
+  margin-left: 0.4rem;
+}
+.rot-theme-seg button {
+  background: transparent;
+  border: 0;
+  border-right: 1px solid var(--border, #c48a18);
+  color: var(--text, #e0a020);
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.72rem;
+  min-height: 2.2rem;
+  padding: 0 0.65rem;
+  cursor: pointer;
+}
+.rot-theme-seg button:last-child { border-right: 0; }
+.rot-theme-seg button.active {
+  background: #c48a18;
+  color: #1a1204;
+}
+
+#tab-rotation.panel { padding: 0; }
+#tab-rotation .rotation-dock {
+  margin: 0.75rem 0.85rem 3.2rem;
+  min-height: calc(100vh - 12rem);
+  display: flex;
+  flex-direction: column;
+}
+.rotation-frame {
+  width: 100%;
+  flex: 1;
+  min-height: 70vh;
+  border: 1px solid var(--border, #c48a18);
+  background: #05080a;
+}
+body.rotation-open main { max-width: none; padding: 0; }
+body.rotation-open .console-footer { display: none; }

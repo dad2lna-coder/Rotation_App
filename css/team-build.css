@@ -1,0 +1,157 @@
+.team-stat-team-line { cursor: pointer; }
+.team-stat-team-line:hover,
+.team-stat-team-line.is-followed { background: var(--panel2); }
+.team-stat-team-line.is-followed strong { color: var(--amber); }
+
+#team-boards-dock #btn-team-new-dock { display: none !important; }
+#team-boards-dock .float-panel-head {
+  min-height: 1.7rem;
+  padding: 0.2rem 0.45rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#team-boards-dock .float-panel-head .section-title {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  text-align: center;
+  width: 100%;
+}
+#team-boards-dock.team-boards-dock,
+.team-boards-dock {
+  max-width: 20rem;
+  width: min(20rem, 90vw);
+  padding: 0.35rem 0.4rem 0.45rem;
+}
+.team-boards-follow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: calc(100vh - 6.5rem);
+  overflow: auto;
+}
+
+.team-summary-card {
+  background: #161d2a;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.35rem 0.45rem 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  font-size: 0.72rem;
+}
+.team-summary-card.sortable-ghost,
+.team-summary-card.is-drop-target {
+  outline: 1px solid var(--amber);
+}
+.team-summary-top {
+  display: grid;
+  grid-template-columns: 1.6rem 1fr auto;
+  align-items: center;
+  gap: 0.25rem;
+}
+.team-edit-btn {
+  width: 1.45rem;
+  height: 1.45rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  border-radius: 6px;
+  line-height: 1;
+}
+.team-summary-center { text-align: center; }
+.team-summary-top .ts-label {
+  font-size: 0.52rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 700;
+  line-height: 1;
+}
+.team-summary-num { font-size: 1.05rem; font-weight: 800; line-height: 1.1; }
+.team-summary-phase { justify-self: end; text-align: right; }
+.team-phase-pill {
+  display: inline-block;
+  background: #3a2e10;
+  border: 1px solid #6b5210;
+  color: var(--amber);
+  border-radius: 7px;
+  padding: 0.12rem 0.38rem;
+  font-weight: 700;
+  font-size: 0.62rem;
+}
+.team-summary-mid {
+  display: grid;
+  grid-template-columns: auto auto auto minmax(2.6rem, 1fr) auto auto;
+  align-items: center;
+  gap: 0.18rem 0.28rem;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 0.22rem 0;
+  white-space: nowrap;
+}
+.team-rdo-pill {
+  background: var(--panel2);
+  border-radius: 999px;
+  padding: 0.08rem 0.32rem;
+  font-weight: 700;
+  font-size: 0.66rem;
+}
+.team-total-pill {
+  background: #14301f;
+  color: var(--green);
+  border-radius: 999px;
+  padding: 0.08rem 0.32rem;
+  font-weight: 800;
+  font-size: 0.66rem;
+  min-width: 1.25rem;
+  text-align: center;
+}
+.team-sex-split,
+.role-sex-bar {
+  display: flex;
+  overflow: hidden;
+  border-radius: 5px;
+  min-height: 1.05rem;
+  min-width: 2.2rem;
+  font-weight: 700;
+  font-size: 0.62rem;
+}
+.team-sex-split span,
+.role-sex-bar span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+.sex-bar-m { background: #4a90d9; }
+.sex-bar-f { background: #d36a8c; }
+.team-role-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.22rem; }
+.team-role-box {
+  background: #101722;
+  border-radius: 7px;
+  padding: 0.2rem 0.18rem 0.18rem;
+  text-align: center;
+}
+.team-role-box .role-name {
+  font-size: 0.56rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 0.12rem;
+}
+#team-detail-modal { z-index: 80; }
+#team-detail-modal .modal-content { z-index: 81; position: relative; }
+#team-detail-modal .team-edit-list { max-height: 50vh; overflow: auto; }
+#team-detail-modal [data-remove-member] {
+  pointer-events: auto;
+  z-index: 2;
+  position: relative;
+}
+.team-stats-dock {
+  max-width: 18rem;
+  width: min(18rem, 88vw);
+}
