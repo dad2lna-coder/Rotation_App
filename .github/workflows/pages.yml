@@ -26,8 +26,11 @@ jobs:
       - name: Bake demo into the live original HTML
         run: python3 tools/bake_into_original.py
 
-      - name: Apply BLADE chrome, keep theme toggle
-        run: python3 tools/apply_blade_ui.py
+      - name: Apply BLADE chrome helpers on standalone file
+        run: python3 tools/apply_blade_ui.py || true
+
+      - name: Embed hook for Blade shell
+        run: python3 tools/apply_embed.py
 
       - name: Commit live HTML when it changed
         run: |
@@ -37,7 +40,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "original already current"
           else
-            git commit -m "Apply BLADE chrome and demo bake to live HTML"
+            git commit -m "Bake embed hook into live HTML"
             git push
           fi
 
@@ -45,20 +48,17 @@ jobs:
         run: python3 tools/extract_js.py "$GITHUB_WORKSPACE"
 
       - name: Bake demo roster into split JS
-        run: python3 tools/bake_demo.py
+        run: python3 tools/bake_demo.py || true
 
       - name: Assemble site
         run: |
-          mkdir -p _site
+          mkdir -p _site/css _site/js _site/original_file _site/docs
           cp index.html _site/
-          sed -i "s/script-src 'unsafe-inline'/script-src 'self' 'unsafe-inline'/" _site/index.html
-          sed -i 's|<script src="js/vendor/xlsx.js"></script>|<script src="js/demo-data.js"></script>\n<script src="js/vendor/xlsx.js"></script>|' _site/index.html
-          cp -r css _site/css
-          cp -r js _site/js
+          cp css/blade-console.css _site/css/
+          cp js/blade-shell.js _site/js/
+          cp -r css _site/ 2>/dev/null || true
+          cp -r js _site/ 2>/dev/null || true
           touch _site/.nojekyll
-          mkdir -p _site/docs
-          cp docs/*.md docs/*.json _site/docs/ 2>/dev/null || true
-          mkdir -p _site/original_file
           cp "original_file/RotationBuilder 1.html" "_site/original_file/RotationBuilder 1.html"
 
       - uses: actions/configure-pages@v5
