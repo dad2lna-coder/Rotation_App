@@ -70,9 +70,9 @@
       </details>
       <details class="card setup-fold" id="card-func"><summary class="section-title">Function coverage</summary>
         <div class="fc-pool-row" style="display:flex;flex-wrap:wrap;gap:0.65rem 1rem;align-items:center">
-          <label>DFO STSO <input type="number" id="fc-pool-stso" min="0" value="0" style="width:4rem" /></label>
-          <label>DFO LTSO <input type="number" id="fc-pool-ltso" min="0" value="0" style="width:4rem" /></label>
-          <label>DFO TSO <input type="number" id="fc-pool-tso" min="0" value="0" style="width:4rem" /></label>
+          <label>DFO STSO <input type="number" id="fc-pool-stso" min="0" value="1" style="width:4rem" /></label>
+          <label>DFO LTSO <input type="number" id="fc-pool-ltso" min="0" value="1" style="width:4rem" /></label>
+          <label>DFO TSO <input type="number" id="fc-pool-tso" min="0" value="4" style="width:4rem" /></label><label>BAG TSO <input type="number" id="fc-pool-bag" min="0" value="2" style="width:4rem" /></label><button type="button" class="btn btn-amber" id="fc-generate">Assign DFO / BAG days</button>
           <label>Phase threshold (min) <input type="number" id="fc-phase-thr" min="0" max="120" value="15" style="width:4rem" /></label>
           <label class="follow-me-label"><input type="checkbox" id="fc-ampm-split" checked /> 50/50 AM–PM split</label>
           <button type="button" class="btn" id="fc-add-band">+ Add band</button>
@@ -548,4 +548,5 @@
   <script src="js/ui/07-editing.js"></script>
   <script src="js/ui/08-config-ui.js"></script>
   <script src="js/merged-shell.js"></script>
+  <script src="js/blade-rotation-bridge.js"></script>
 </body></html>
