@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Build the single Blade+Rotation app into _site/index.html."""
+"""Build one Blade+Rotation app. Rotation is an F7 tab in Blade chrome."""
+import re
 from pathlib import Path
 import urllib.request
 
@@ -28,44 +29,34 @@ def main():
     svg = orig[orig.find("<svg") : orig.find("</svg>") + 6]
     app = orig[orig.find('<div id="app">') : orig.find('<div class="toast"')]
     toast = orig[orig.find('<div class="toast"') : orig.find("<script>")]
+    app = re.sub(r'<header class="top">.*?</header>', "", app, flags=re.S)
+    app = re.sub(r'<footer class="blade-foot">.*?</footer>', "", app, flags=re.S)
 
-    extra = """
-body.blade-shell #app .top, body.blade-shell #app .blade-foot { display:none !important; }
-body.blade-shell #tab-rotation, body.blade-shell #tab-rotation #app {
-  height: 100%; display: flex; flex-direction: column;
-}
-"""
-    (site / "css" / "rotation.css").write_text(style + extra, encoding="utf-8")
+    (site / "css" / "rotation.css").write_text(style, encoding="utf-8")
+    overlay = ROOT / "css" / "rotation-blade.css"
+    if overlay.exists():
+        (site / "css" / "rotation-blade.css").write_text(overlay.read_text(encoding="utf-8"), encoding="utf-8")
 
-    try:
-        (site / "css" / "blade-app.css").write_bytes(fetch(BLADE_BASE + "/css/styles.css"))
-        console = fetch(BLADE_BASE + "/css/console.css").decode("utf-8", "replace")
-        console += """
+    (site / "css" / "blade-app.css").write_bytes(fetch(BLADE_BASE + "/css/styles.css"))
+    console = fetch(BLADE_BASE + "/css/console.css").decode("utf-8", "replace")
+    console += """
 .rot-theme-seg{display:inline-flex;border:1px solid var(--border,#c48a18)}
 .rot-theme-seg button{background:transparent;border:0;border-right:1px solid var(--border,#c48a18);color:var(--text,#e0a020);font-family:inherit;text-transform:uppercase;letter-spacing:.06em;font-size:.72rem;min-height:2.2rem;padding:0 .65rem;cursor:pointer}
 .rot-theme-seg button:last-child{border-right:0}
 .rot-theme-seg button.active{background:#c48a18;color:#1a1204}
 .panel{display:none}.panel.active{display:block}
-#tab-rotation.panel.active{height:calc(100vh - 8.4rem)}
 """
-        (site / "css" / "console.css").write_text(console, encoding="utf-8")
-    except Exception as e:
-        print("blade css fetch failed", e)
+    (site / "css" / "console.css").write_text(console, encoding="utf-8")
 
-    parts = []
-    try:
-        parts.append(fetch(BLADE_BASE + "/lib/dayjs.min.js").decode("utf-8", "replace"))
-        for n in BLADE_JS:
-            parts.append(f"\n/* ==== {n} ==== */\n")
-            parts.append(fetch(BLADE_BASE + "/js/" + n).decode("utf-8", "replace"))
-        (site / "js" / "blade-app.js").write_text("".join(parts), encoding="utf-8")
-        blade_script = '<script src="js/blade-app.js"></script>'
-    except Exception as e:
-        print("blade js fetch failed", e)
-        blade_script = ""
+    parts = [fetch(BLADE_BASE + "/lib/dayjs.min.js").decode("utf-8", "replace")]
+    for n in BLADE_JS:
+        parts.append(f"\n/* ==== {n} ==== */\n")
+        parts.append(fetch(BLADE_BASE + "/js/" + n).decode("utf-8", "replace"))
+    (site / "js" / "blade-app.js").write_text("".join(parts), encoding="utf-8")
 
     blade_html = fetch(BLADE_BASE + "/index.html").decode("utf-8", "replace")
     blade_main = blade_html[blade_html.find("<main>") + 6 : blade_html.find("</main>")]
+    blade_main = blade_main.replace('class="panel active"', 'class="panel"', 1)
     blade_modals = blade_html[blade_html.find("</main>") + 7 : blade_html.find("<footer")]
     shell = (ROOT / "js" / "merged-shell.js").read_text(encoding="utf-8")
     (site / "js" / "merged-shell.js").write_text(shell, encoding="utf-8")
@@ -79,6 +70,7 @@ body.blade-shell #tab-rotation, body.blade-shell #tab-rotation #app {
   <link rel="stylesheet" href="css/blade-app.css" />
   <link rel="stylesheet" href="css/console.css" />
   <link rel="stylesheet" href="css/rotation.css" />
+  <link rel="stylesheet" href="css/rotation-blade.css" />
 </head>
 <body class="console-skin blade-shell">
   <header class="topbar">
@@ -127,9 +119,9 @@ body.blade-shell #tab-rotation, body.blade-shell #tab-rotation #app {
 {blade_modals}
   <footer class="console-footer">
     <span>SYSTEM STATUS: <b>READY</b></span>
-    <span>NAV: F1–F7</span>
+    <span>NAV: F1–F7 · ROTATION IS A BLADE TAB</span>
   </footer>
-  {blade_script}
+  <script src="js/blade-app.js"></script>
   <script src="js/demo-data.js"></script>
   <script src="js/vendor/xlsx.js"></script>
   <script src="js/core/01-foundation.js"></script>
