@@ -19,6 +19,9 @@
     if (typeof orig === "function" && name !== "rotation") {
       try { orig.call(S, name); } catch (e) {}
     }
+    if ((name === "rotation" || name === "capacity") && S.renderPlacementMatrix) {
+      S.renderPlacementMatrix();
+    }
   };
   document.querySelectorAll(".tab-btn").forEach(function (btn) {
     btn.addEventListener("click", function () { S.switchTab(btn.getAttribute("data-tab")); });
@@ -37,5 +40,13 @@
     if (map[e.key]) { e.preventDefault(); S.switchTab(map[e.key]); }
   });
   applyRotTheme(localStorage.getItem("rotation.theme") || "dark");
+  if (!document.querySelector('script[src*="f7-placement"]')) {
+    var s = document.createElement("script");
+    s.src = "js/f7-placement.js";
+    s.onload = function () {
+      if (S.initPlacement) S.initPlacement();
+    };
+    document.body.appendChild(s);
+  }
   S.switchTab("rotation");
 })();
