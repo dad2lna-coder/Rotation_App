@@ -1,0 +1,48 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract scripts from original monolith
+        run: python3 tools/extract_js.py "$GITHUB_WORKSPACE"
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+          cp -r css _site/css
+          cp -r js _site/js
+          touch _site/.nojekyll
+          mkdir -p _site/docs
+          cp docs/*.md docs/*.json _site/docs/ 2>/dev/null || true
+          mkdir -p _site/original_file
+          cp "original_file/RotationBuilder 1.html" "_site/original_file/RotationBuilder 1.html"
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - uses: actions/deploy-pages@v4
+        id: deployment
