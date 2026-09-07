@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  var DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  var DOW = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
   function $(id) { return document.getElementById(id); }
 
@@ -50,7 +50,7 @@
       k: r.k || ("L" + (r.id || lineName(r))),
       n: lineName(r),
       ti: r.ti || "TSO",
-      po: r.po || "TDC",
+      po: r.po || r.position || "",
       sex: (r.x != null && r.x !== "") ? r.x : (r.sex || ""),
       quals: (r.q != null && r.q !== "") ? r.q : (r.quals || ""),
       s: s0, e: e0, rawS: s, rawE: e,
@@ -75,6 +75,7 @@
       if (dow != null && r.dow != null && Number(r.dow) !== Number(dow)) return false;
       if (want && r.sh && r.sh !== want) return false;
       if (loc && r.lo && !locMatch(r.lo, loc)) return false;
+      if (r.s == null || r.e == null) return false;
       return true;
     });
   }
@@ -94,24 +95,49 @@
     };
   }
 
+  function locsForDow(dow) {
+    var RS = window.S;
+    var seen = {};
+    var out = [];
+    ((RS && RS.roster) || []).forEach(function (r) {
+      if (dow != null && r.dow != null && Number(r.dow) !== Number(dow)) return;
+      if (!r.lo) return;
+      if (!seen[r.lo]) { seen[r.lo] = 1; out.push(r.lo); }
+    });
+    return out;
+  }
+
+  function applyDayTabToLocs() {
+    var dow = selectedDow();
+    var RS = window.S;
+    if (!RS || !RS.cfg) return;
+    var locs = locsForDow(dow);
+    locs.forEach(function (id) { ensureLocation(RS.cfg, id, null); });
+    if (typeof fillLocSelect === "function") fillLocSelect();
+    var locEl = $("iLoc");
+    if (locEl && locs.length && locs.indexOf(locEl.value) < 0) locEl.value = locs[0];
+  }
+
   function injectDayUi() {
     var dateBox = $("iDate");
-    if (!dateBox || $("iDow")) return;
+    var existing = $("iDow");
+    if (existing) {
+      existing.addEventListener("change", applyDayTabToLocs);
+      return;
+    }
+    if (!dateBox) return;
     var wrap = dateBox.closest(".grp") || dateBox.parentNode;
     if (!wrap) return;
     var lab = wrap.querySelector(".lbl");
-    if (lab) lab.textContent = "Day of week (date unused)";
+    if (lab) lab.textContent = "Day (Interchange tab)";
+    dateBox.hidden = true;
     var sel = document.createElement("select");
     sel.id = "iDow";
     sel.innerHTML = DOW.map(function (d, i) {
       return "<option value=\"" + i + "\">" + d + "</option>";
     }).join("");
     wrap.appendChild(sel);
-    sel.addEventListener("change", function () {
-      if (typeof generate === "function" && window.S && S.roster && S.roster.length) {
-        /* day filter applied on next generate */
-      }
-    });
+    sel.addEventListener("change", applyDayTabToLocs);
     var btn = document.createElement("button");
     btn.type = "button";
     btn.className = "btn wide sm";
@@ -124,18 +150,12 @@
 
   function wrapStaffFor() {
     if (typeof staffFor !== "function" || staffFor._f7) return;
-    var orig = staffFor;
     window.staffFor = function (roster, loc, date, w0, w1, cfg, adj, shift) {
       var dow = selectedDow();
       var slot = (cfg && cfg.rules && cfg.rules.slot) || 30;
       var subset = filterRoster(roster, loc, shift, dow);
-      if (!subset.length) subset = filterRoster(roster, "", shift, dow);
-      if (!subset.length) subset = filterRoster(roster, "", "", dow);
-      var out = subset.map(function (r) { return personFromRow(r, w0, w1, slot); });
-      if (!out.length) {
-        try { out = orig.apply(this, arguments) || []; } catch (e) { out = []; }
-      }
-      return stampNames(out);
+      if (!subset.length) subset = filterRoster(roster, loc, "", dow);
+      return stampNames(subset.map(function (r) { return personFromRow(r, w0, w1, slot); }));
     };
     staffFor._f7 = true;
   }
@@ -166,6 +186,7 @@
         }
       }
       if ($("iDate")) $("iDate").value = "";
+      applyDayTabToLocs();
       var res = orig.apply(this, arguments);
       if (RS && RS.sheet && RS.sheet.people) stampNames(RS.sheet.people);
       if (typeof renderSheet === "function" && RS && RS.sheet) renderSheet();
@@ -184,7 +205,6 @@
     if (Sch && Sch.placeTeams) Sch.placeTeams();
     if (Sch && Sch.enrichOperationalLines) Sch.enrichOperationalLines();
     if (window.pushLinesToRotation) window.pushLinesToRotation();
-
     var locs = [];
     var seen = {};
     RS.roster.forEach(function (r) {
@@ -195,7 +215,6 @@
       if (typeof toast === "function") toast("No placed locations on the line-days.", "err");
       return;
     }
-
     var shifts = ["AM", "PM"];
     var made = 0;
     DOW.forEach(function (name, day) {
@@ -222,7 +241,7 @@
       });
     });
     if ($("iDow")) $("iDow").value = "0";
-    if (typeof toast === "function") toast("Built " + made + " sheets (locations \u00d7 days \u00d7 shifts). Pick a day and location to view.", "ok");
+    if (typeof toast === "function") toast("Built " + made + " sheets (locations × days × shifts). Pick a day and location to view.", "ok");
     if (typeof refreshSaved === "function") refreshSaved();
   }
 
