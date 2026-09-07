@@ -89,28 +89,58 @@
 
   function timesForLineDay(line, di) {
     var ad = getAdapter();
+    var sched = (Sch.state && Sch.state.schedule && (Sch.state.schedule[line.id] || Sch.state.schedule[String(line.id)])) || [];
+    var schedVal = sched[di];
+
+    if (ad && ad.classifyDay) {
+      var cls = ad.classifyDay(line, di);
+      if (cls.status === "OFF") {
+        return { off: true, raw: cls.raw, source: cls.source };
+      }
+      if (cls.status === "WORKING" && cls.startMin != null) {
+        return {
+          startMin: cls.startMin,
+          endMin: cls.endMin,
+          shiftName: cls.shift,
+          fromDayCell: cls.source === "day-cell",
+          raw: cls.raw,
+          source: cls.source
+        };
+      }
+      if (cls.status === "WORKING" || schedVal === "WORK" || (ad.WORK_RE && ad.WORK_RE.test(String(cls.raw || "").trim()))) {
+        var fb = ad.rowStartEnd ? ad.rowStartEnd(line) : null;
+        if (fb) {
+          return {
+            startMin: fb.startMin,
+            endMin: fb.endMin,
+            shiftName: fb.shift,
+            fromDayCell: false,
+            raw: cls.raw,
+            source: "row-start-end"
+          };
+        }
+        return { workingMissingTime: true, raw: cls.raw, source: "working-missing-time" };
+      }
+      return { unknown: true, raw: cls.raw, source: cls.source || "blank" };
+    }
+
     if (ad) {
       var raw = ad.dayValueOf(line, di);
       var parsed = ad.parseTime(raw);
       if (parsed) {
-        return { startMin: parsed.startMin, endMin: parsed.endMin, shiftName: parsed.shift, fromDayCell: true, raw: parsed.raw };
+        return { startMin: parsed.startMin, endMin: parsed.endMin, shiftName: parsed.shift, fromDayCell: true, raw: parsed.raw, source: "day-cell" };
       }
-      if (raw != null && String(raw).trim() !== "" && ad.OFF_RE && ad.OFF_RE.test(String(raw).trim())) return null;
-      if (raw != null && String(raw).trim() !== "" && !parsed) return null;
+      if (raw != null && String(raw).trim() !== "" && ad.OFF_RE && ad.OFF_RE.test(String(raw).trim())) {
+        return { off: true, raw: String(raw), source: "day-cell-off" };
+      }
     }
-    var sched = Sch.state.schedule[line.id] || Sch.state.schedule[String(line.id)] || [];
-    if (sched[di] !== "WORK") return null;
-    var start = 240;
-    var end = start + Math.round((line.paid || 8) * 60);
-    if (Sch.getEffectiveShiftTimes && line.shiftId) {
-      var eff = Sch.getEffectiveShiftTimes(line.shiftId, di);
-      if (eff && Sch.timeToMin) { start = Sch.timeToMin(eff.start); end = Sch.timeToMin(eff.end); }
-    } else if (Sch.getShift && line.shiftId) {
-      var sh = Sch.getShift(line.shiftId);
-      if (sh && Sch.timeToMin) { start = Sch.timeToMin(sh.start); end = Sch.timeToMin(sh.end); }
+    if (schedVal === "RDO" || schedVal === "OFF") return { off: true, raw: schedVal, source: "schedule" };
+    if (schedVal === "WORK") {
+      var fb2 = ad && ad.rowStartEnd ? ad.rowStartEnd(line) : null;
+      if (fb2) return { startMin: fb2.startMin, endMin: fb2.endMin, shiftName: fb2.shift, fromDayCell: false, raw: "WORK", source: "row-start-end" };
+      return { workingMissingTime: true, raw: "WORK", source: "working-missing-time" };
     }
-    if (end <= start) end += 1440;
-    return { startMin: start, endMin: end, shiftName: start < 12 * 60 ? "AM" : "PM", fromDayCell: false };
+    return { unknown: true, raw: schedVal == null ? "" : String(schedVal), source: "blank" };
   }
 
   function pushLinesToRotation() {
@@ -125,26 +155,21 @@
 
     Sch.state.lines.forEach(function (line, index) {
       var duties = (Sch.state.functionRotation || {})[String(line.id)] || [];
-      var role = Sch.lineRoleKey ? Sch.lineRoleKey(line) : (line.position || line.empClass || "TSO");
+      var role = Sch.lineRoleKey ? Sch.lineRoleKey(line) : (line.position || line.empClass || "");
       var weekLen = 7;
       var sched = Sch.state.schedule[line.id] || Sch.state.schedule[String(line.id)] || [];
       if (sched.length > weekLen) weekLen = sched.length;
 
       for (var di = 0; di < weekLen; di++) {
         var times = timesForLineDay(line, di % 7);
-        if (!times) {
-          if (ad) {
-            var rawV = ad.dayValueOf(line, di % 7);
-            if (rawV != null && String(rawV).trim() !== "") {
-              skipped.push({
-                index: index,
-                line: line.lineCode || ("Line " + String(line.id).padStart(3, "0")),
-                raw: String(rawV).trim(),
-                day: DOW[di % 7],
-                reason: ad.OFF_RE && ad.OFF_RE.test(String(rawV).trim()) ? "non-working" : "unparseable-or-off"
-              });
-            }
-          }
+        if (!times || times.off || times.unknown || times.workingMissingTime || times.startMin == null) {
+          skipped.push({
+            index: index,
+            line: line.lineCode || ("Line " + String(line.id).padStart(3, "0")),
+            raw: times && times.raw != null ? String(times.raw) : "",
+            day: DOW[di % 7],
+            reason: times && times.off ? "off" : (times && times.workingMissingTime ? "working-missing-time" : (times && times.unknown ? "unrecognized-or-blank-not-off" : "no-times"))
+          });
           continue;
         }
 
@@ -174,8 +199,7 @@
         if (loc) locCounts[loc] = (locCounts[loc] || 0) + 1;
 
         var notes = [];
-        if (duty) notes.push(duty + " " + DOW[di % 7]);
-        else notes.push(DOW[di % 7]);
+        notes.push(DOW[di % 7]);
         if (home && home.modset) notes.push(home.modset);
         if (ov && ov.Modset) notes.push(ov.Modset);
 
@@ -205,13 +229,14 @@
           teamId: (ov && ov.Team) || (home && home.teamId),
           generation: 2,
           needsPlacement: !loc,
-          sourceDayValue: times.raw || undefined
+          sourceDayValue: times.raw,
+          timeSource: times.source
         });
       }
     });
 
     if (!rows.length) {
-      if (Sch.updateStatus) Sch.updateStatus("No working line-days to push (all off or unparseable).");
+      if (Sch.updateStatus) Sch.updateStatus("No working line-days to push (off, blank, or missing times).");
       return;
     }
 
@@ -235,7 +260,7 @@
     if ($("rosterInfo")) {
       var extra = unplaced ? (" · " + unplaced + " line-days still unplaced") : "";
       var skipInfo = skipped.length ? (" · " + skipped.length + " skipped") : "";
-      $("rosterInfo").innerHTML = "<b>" + rows.length + "</b> Gen-2 line-days · location from team-home matrix" + extra + skipInfo;
+      $("rosterInfo").innerHTML = "<b>" + rows.length + "</b> Gen-2 line-days · day-cell times" + extra + skipInfo;
     }
     if ($("iDate")) {
       $("iDate").value = "";
