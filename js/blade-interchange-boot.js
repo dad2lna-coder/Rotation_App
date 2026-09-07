@@ -29,9 +29,26 @@
     }
     if (window.BladeInterchange && BladeInterchange.hookUi) BladeInterchange.hookUi();
   }
+  function sanitizeRosterPo() {
+    var R = window.S;
+    if (!R || !Array.isArray(R.roster)) return;
+    R.roster.forEach(function (r) {
+      var src = r.position || (r.ti ? String(r.ti).split("/")[0] : "") || "";
+      if (r.po === "TDC" && src && src !== "TDC") r.po = src;
+      if (r.po === "BAG" && r.duty !== "BAG" && r.functionName !== "BAG") r.po = src || r.po;
+      if (r.po === "DFO" && r.duty !== "DFO" && r.functionName !== "DFO") r.po = src || r.po;
+      if (!r.position && src) r.position = src;
+    });
+  }
+  var prev = window.pushLinesToRotation;
+  window.pushLinesToRotation = function () {
+    if (typeof prev === "function") prev();
+    sanitizeRosterPo();
+  };
   function boot() {
     inject();
     if (!window.BladeInterchange) load("js/blade-interchange.js", inject);
+    setTimeout(sanitizeRosterPo, 600);
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
