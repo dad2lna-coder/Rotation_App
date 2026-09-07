@@ -1,8 +1,7 @@
 /**
- * Debug / Interchange workbook
- * BLADE → Adapter → F7 → XLSX → edit → import → validation → Rotation
- *
- * Does not invent TDC/BAG/DFO. Missing fields stay empty and land on Validation.
+ * Debug / Interchange workbook.
+ * Classifies each Sun–Sat cell in place. Time range = WORKING. RDO/OFF only = OFF.
+ * Blank is UNKNOWN, never OFF.
  */
 (function (global) {
   "use strict";
@@ -10,9 +9,9 @@
   var DOW = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   var DOW_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   var DAY_COLS = [
-    "Line Key", "Line", "Position", "Sex", "Day", "Start", "End",
-    "Team", "Location", "Modset", "Function", "Rotation Position",
-    "Status", "Validation"
+    "Line Key", "Line", "Position", "Sex", "Day", "Raw", "Status",
+    "Start", "End", "Team", "Location", "Modset", "Function",
+    "Rotation Position", "Validation"
   ];
 
   var overlay = {};
@@ -22,17 +21,11 @@
   function Ad() { return global.BladeLinesAdapter; }
 
   function overlayKey(lineKey, di) { return String(lineKey) + "|" + String(di); }
-
-  function overlayFor(lineKey, di) {
-    return overlay[overlayKey(lineKey, di)] || null;
-  }
-
+  function overlayFor(lineKey, di) { return overlay[overlayKey(lineKey, di)] || null; }
   function setOverlay(lineKey, di, patch) {
     var k = overlayKey(lineKey, di);
     overlay[k] = Object.assign({}, overlay[k] || {}, patch || {});
   }
-
-  function clearOverlay() { overlay = {}; }
 
   function parseClock(s) {
     if (s == null || String(s).trim() === "") return null;
@@ -40,11 +33,99 @@
     if (m) return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
     var d = String(s).replace(/\D/g, "");
     if (d.length === 3 || d.length === 4) {
-      var hh = d.length === 3 ? parseInt(d.slice(0,1),10) : parseInt(d.slice(0,2),10);
-      var mm = d.length === 3 ? parseInt(d.slice(1),10) : parseInt(d.slice(2),10);
+      var hh = d.length === 3 ? parseInt(d.slice(0, 1), 10) : parseInt(d.slice(0, 2), 10);
+      var mm = d.length === 3 ? parseInt(d.slice(1), 10) : parseInt(d.slice(2), 10);
       if (mm < 60) return hh * 60 + mm;
     }
     return null;
+  }
+
+  function compact(start, end) {
+    function hhmm(t) {
+      if (t == null) return "";
+      var s = String(t).trim();
+      var m = s.match(/^(\d{1,2}):(\d{2})$/);
+      if (m) return (m[1].length < 2 ? "0" + m[1] : m[1]) + m[2];
+      var d = s.replace(/\D/g, "");
+      return d.length === 3 ? "0" + d : d;
+    }
+    var a = hhmm(start), b = hhmm(end);
+    return a && b ? a + "-" + b : "";
+  }
+
+  function schedVal(S, line, di) {
+    if (!S || !S.state || !S.state.schedule || !line) return "";
+    var row = S.state.schedule[line.id] || S.state.schedule[String(line.id)] || [];
+    return row[di] == null ? "" : String(row[di]);
+  }
+
+  function namedDay(ad, line, di) {
+    if (ad && ad.dayValueOf) {
+      var v = ad.dayValueOf(line, di);
+      if (v != null && String(v).trim() !== "") return String(v);
+    }
+    var keys = [DOW[di], DOW_SHORT[di], DOW[di].toLowerCase(), DOW_SHORT[di].toLowerCase()];
+    for (var i = 0; i < keys.length; i++) {
+      if (line[keys[i]] != null && String(line[keys[i]]).trim() !== "") return String(line[keys[i]]);
+    }
+    return "";
+  }
+
+  function shiftRange(S, line, di) {
+    if (!S || !line) return "";
+    if (S.getEffectiveShiftTimes && line.shiftId) {
+      var eff = S.getEffectiveShiftTimes(line.shiftId, di);
+      if (eff && eff.start && eff.end) return compact(eff.start, eff.end);
+    }
+    if (S.getShift && line.shiftId) {
+      var sh = S.getShift(line.shiftId);
+      if (sh && sh.start && sh.end) return compact(sh.start, sh.end);
+    }
+    if (line.shiftLabel) return String(line.shiftLabel);
+    return "";
+  }
+
+  function classifyCell(S, ad, line, di) {
+    var named = namedDay(ad, line, di);
+    var sched = schedVal(S, line, di);
+    var raw = named || sched || "";
+    var parsed = ad && ad.parseTime ? ad.parseTime(raw) : null;
+    if (!parsed && named) parsed = ad && ad.parseTime ? ad.parseTime(named) : null;
+    if (!parsed && sched) parsed = ad && ad.parseTime ? ad.parseTime(sched) : null;
+
+    var rec = { raw: raw || named || sched || "", status: "UNKNOWN", start: "", end: "", startMin: null, endMin: null };
+
+    if (parsed) {
+      rec.status = "WORKING";
+      rec.start = parsed.start;
+      rec.end = parsed.end;
+      rec.startMin = parsed.startMin;
+      rec.endMin = parsed.endMin;
+      rec.raw = parsed.raw || raw;
+      return rec;
+    }
+
+    if (/^(RDO|OFF|DAY\s*OFF)$/i.test(String(raw).trim()) || /^(RDO|OFF)$/i.test(String(sched).trim())) {
+      rec.status = "OFF";
+      rec.raw = raw || sched || "RDO";
+      return rec;
+    }
+
+    if (/^(WORK|WORKING)$/i.test(String(raw).trim()) || /^(WORK|WORKING)$/i.test(String(sched).trim())) {
+      var range = shiftRange(S, line, di);
+      var p2 = range && ad && ad.parseTime ? ad.parseTime(range) : null;
+      rec.status = "WORKING";
+      rec.raw = range || raw || "WORK";
+      if (p2) {
+        rec.start = p2.start; rec.end = p2.end;
+        rec.startMin = p2.startMin; rec.endMin = p2.endMin;
+      }
+      return rec;
+    }
+
+    rec.status = "UNKNOWN";
+    rec.raw = raw;
+    return rec;
   }
 
   function teamOfLine(S, line) {
@@ -87,127 +168,86 @@
     return line.position || line.empClass || line.jobTitle || "";
   }
 
-  function validateRow(r, seen) {
-    var errs = [];
-    if (!r.position) errs.push("missing Position");
-    if (r.status === "WORK") {
-      if (!r.start || !r.end) errs.push("missing time");
-      if (!r.team) errs.push("missing Team");
-      if (!r.location) errs.push("missing Location");
-      if (!r.modset) errs.push("missing Modset");
-    }
-    if (r.status === "INVALID_TIME") errs.push("invalid time");
-    var dk = r.lineKey + "|" + r.dayIndex;
-    if (r.status === "WORK") {
-      if (seen[dk]) errs.push("duplicate line-day");
-      seen[dk] = true;
-    }
-    return errs;
-  }
-
   function buildModel() {
     var S = Sch();
     var ad = Ad();
     var days = [[], [], [], [], [], [], []];
     var raw = [];
+    var debug = [];
     var placement = [];
     var functions = [];
     var validation = [];
-    var seen = {};
     var lines = (S && S.state && S.state.lines) || [];
 
     var matrix = S && S.state && S.state.placementMatrix;
     if (matrix && matrix.rows) {
       matrix.rows.forEach(function (p) {
         placement.push({
-          Team: p.teamName || p.teamId || "",
-          Day: p.dow || DOW_SHORT[p.day] || "",
-          Location: p.locKey || "",
-          Zone: p.zone || p.checkpoint || "",
-          Modset: p.modset || "",
-          Program: p.program || "",
-          Score: p.score != null ? p.score : "",
-          Reason: p.reason || "",
-          Work: p.work != null ? p.work : ""
+          Team: p.teamName || p.teamId || "", Day: p.dow || DOW_SHORT[p.day] || "",
+          Location: p.locKey || "", Modset: p.modset || "", Program: p.program || ""
         });
       });
     }
 
+    var work = 0, offN = 0, unk = 0;
     lines.forEach(function (line, index) {
       var key = ad && ad.lineKey ? ad.lineKey(line, index) : ("LINE-" + String(line.id != null ? line.id : index + 1).padStart(3, "0"));
       var name = ad && ad.lineDisplayName ? ad.lineDisplayName(line, index) : (line.lineCode || key);
       var pos = positionOf(line);
       var sex = line.sex != null && line.sex !== "" ? String(line.sex).trim().toUpperCase() : "";
       var team = teamOfLine(S, line);
-      var rawRow = {
-        "Line Key": key, Line: name, Position: pos, Sex: sex,
-        Team: team ? (team.name || team.id) : "",
-        Sunday: "", Monday: "", Tuesday: "", Wednesday: "", Thursday: "", Friday: "", Saturday: ""
-      };
+      var rawRow = { "Line Key": key, Line: name, Position: pos, Sex: sex, Team: team ? (team.name || team.id) : "" };
       for (var di = 0; di < 7; di++) {
-        var rawV = ad ? ad.dayValueOf(line, di) : "";
-        rawRow[DOW[di]] = rawV == null ? "" : String(rawV);
-        var parsed = ad && ad.parseTime ? ad.parseTime(rawV) : null;
-        var off = !String(rawV || "").trim() || (ad && ad.OFF_RE && ad.OFF_RE.test(String(rawV).trim()));
+        var cls = classifyCell(S, ad, line, di);
+        rawRow[DOW[di]] = cls.raw;
+        if (cls.status === "WORKING") work++;
+        else if (cls.status === "OFF") offN++;
+        else unk++;
+
         var home = locHome(S, line, di);
         var duty = dutyOf(S, line, di);
-        var ov = overlayFor(key, di);
+        var loc = home ? (home.locKey || "") : "";
+        var errs = [];
+        if (!pos) errs.push("missing Position");
+        if (cls.status === "WORKING" && (!cls.start || !cls.end)) errs.push("working missing time");
+        if (cls.status === "WORKING" && !loc) errs.push("missing Location");
+
         var rec = {
-          lineKey: key, line: name, position: pos, sex: sex,
-          day: DOW[di], dayIndex: di,
-          start: parsed ? parsed.start : "", end: parsed ? parsed.end : "",
-          team: team ? (team.name || team.id) : "", teamId: team ? team.id : "",
-          location: home ? (home.locKey || "") : "",
-          modset: home ? (home.modset || "") : "",
+          lineKey: key, line: name, position: pos || "", sex: sex,
+          day: DOW[di], raw: cls.raw, status: cls.status,
+          start: cls.start, end: cls.end,
+          team: team ? (team.name || team.id) : "",
+          location: loc, modset: home ? (home.modset || "") : "",
           functionName: duty || "", rotationPosition: "",
-          status: parsed ? "WORK" : (off ? "OFF" : "INVALID_TIME"),
-          source: String(rawV || "")
+          validation: errs.join("; ")
         };
-        if (ov) {
-          if (ov.Position) rec.position = ov.Position;
-          if (ov.Location) rec.location = ov.Location;
-          if (ov.Modset) rec.modset = ov.Modset;
-          if (ov.Team) rec.team = ov.Team;
-          if (ov.Function != null) rec.functionName = ov.Function;
-          if (ov["Rotation Position"] != null) rec.rotationPosition = ov["Rotation Position"];
-          if (ov.Start) rec.start = ov.Start;
-          if (ov.End) rec.end = ov.End;
-        }
-        var errs = validateRow(rec, seen);
-        rec.validation = errs.join("; ");
         days[di].push(rec);
-        if (errs.length) validation.push({ "Line Key": key, Line: name, Day: DOW[di], Status: rec.status, Issues: rec.validation, Source: rec.source });
-        if (rec.functionName) functions.push({ "Line Key": key, Line: name, Day: DOW[di], Position: rec.position, Function: rec.functionName, Location: rec.location, Source: "functionRotation or overlay" });
+        debug.push({
+          Line: name, Day: DOW_SHORT[di],
+          rawDayValue: cls.raw, dayStatus: cls.status,
+          start: cls.start, end: cls.end
+        });
+        if (errs.length) validation.push({ Line: name, Day: DOW[di], Status: cls.status, Issues: rec.validation, Raw: cls.raw });
+        if (duty) functions.push({ Line: name, Day: DOW[di], Position: pos, Function: duty });
       }
       raw.push(rawRow);
     });
 
-    var work = 0, offN = 0, bad = 0, unplaced = 0;
-    days.forEach(function (list) {
-      list.forEach(function (r) {
-        if (r.status === "WORK") { work++; if (!r.location) unplaced++; }
-        else if (r.status === "OFF") offN++;
-        else bad++;
-      });
-    });
     var summary = [
       { Field: "schema", Value: "blade.interchange.v1" },
       { Field: "lines", Value: lines.length },
       { Field: "working line-days", Value: work },
       { Field: "off/rdo line-days", Value: offN },
-      { Field: "invalid time", Value: bad },
-      { Field: "missing location", Value: unplaced },
-      { Field: "validation issues", Value: validation.length },
-      { Field: "overlay cells", Value: Object.keys(overlay).length },
-      { Field: "note", Value: "Position is BLADE source. Function is a separate explicit stage. TDC is never auto-assigned." }
+      { Field: "unknown line-days", Value: unk },
+      { Field: "debug", Value: "See Debug tab: rawDayValue → dayStatus → start → end" }
     ];
-    return { days: days, raw: raw, placement: placement, functions: functions, validation: validation, summary: summary };
+    return { days: days, raw: raw, debug: debug, placement: placement, functions: functions, validation: validation, summary: summary };
   }
 
   function dayAoa(list) {
     var aoa = [DAY_COLS];
     list.forEach(function (r) {
-      aoa.push([r.lineKey, r.line, r.position, r.sex, r.day, r.start, r.end, r.team, r.location, r.modset, r.functionName, r.rotationPosition, r.status, r.validation]);
+      aoa.push([r.lineKey, r.line, r.position, r.sex, r.day, r.raw, r.status, r.start, r.end, r.team, r.location, r.modset, r.functionName, r.rotationPosition, r.validation]);
     });
     return aoa;
   }
@@ -230,15 +270,21 @@
     var model = buildModel();
     var wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(model.summary), "Summary");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(model.debug.length ? model.debug : [{ rawDayValue: "", dayStatus: "", start: "", end: "" }]), "Debug");
     DOW.forEach(function (name, i) {
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dayAoa(model.days[i])), name);
     });
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(model.placement.length ? model.placement : [{ Team: "", Day: "", Location: "", Modset: "" }]), "Placement");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(model.functions.length ? model.functions : [{ "Line Key": "", Day: "", Function: "" }]), "Function");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(model.validation.length ? model.validation : [{ "Line Key": "", Issues: "none" }]), "Validation");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(model.placement.length ? model.placement : [{ Team: "" }]), "Placement");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(model.functions.length ? model.functions : [{ Function: "" }]), "Function");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(model.validation.length ? model.validation : [{ Issues: "none" }]), "Validation");
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(model.raw.length ? model.raw : [{ "Line Key": "" }]), "Raw_BLADE");
     downloadWb(wb, "blade-interchange-" + new Date().toISOString().slice(0, 10) + ".xlsx");
-    if (Sch() && Sch().updateStatus) Sch().updateStatus("Exported debug / interchange workbook.");
+    var S = Sch();
+    if (S && S.updateStatus) {
+      var w = model.summary[2] && model.summary[2].Value;
+      var o = model.summary[3] && model.summary[3].Value;
+      S.updateStatus("Interchange exported · WORKING " + w + " · OFF " + o + " · see Debug tab");
+    }
   }
 
   function headerMap(row) {
@@ -253,44 +299,29 @@
     if (!S || !S.state) return { rows: 0 };
     if (!S.state.functionRotation) S.state.functionRotation = {};
     var roster = [];
-    var locCounts = {};
-    var unplaced = 0;
     imported.forEach(function (r) {
       setOverlay(r.lineKey, r.dayIndex, {
         Position: r.position, Location: r.location, Modset: r.modset, Team: r.team,
-        Function: r.functionName, "Rotation Position": r.rotationPosition, Start: r.start, End: r.end
+        Function: r.functionName, Start: r.start, End: r.end
       });
-      if (r.status === "OFF") return;
-      if (r.status !== "WORK" && !(r.start && r.end)) return;
+      if (/^OFF$/i.test(r.status)) return;
       var startMin = parseClock(r.start);
       var endMin = parseClock(r.end);
       if (startMin == null || endMin == null) return;
       if (endMin <= startMin) endMin += 1440;
-      var lineId = String(r.lineKey).replace(/^LINE-/i, "");
-      if (!S.state.functionRotation[lineId]) S.state.functionRotation[lineId] = [];
-      S.state.functionRotation[lineId][r.dayIndex] = r.functionName || null;
-      if (r.location) locCounts[r.location] = (locCounts[r.location] || 0) + 1;
-      else unplaced++;
-      var title = r.position || "";
-      if (r.functionName === "DFO" && title) title = title + "/DFO";
-      if (r.functionName === "BAG" && title) title = title + "/BAG";
       roster.push({
-        k: r.lineKey, n: r.line, ti: title, po: r.position || "", lo: r.location || "",
+        k: r.lineKey, n: r.line, ti: r.position || "", po: r.position || "", lo: r.location || "",
         d: "", dow: r.dayIndex, sh: startMin < 720 ? "AM" : "PM", s: startMin, e: endMin,
-        x: r.sex || "", q: "", ab: [], tr: [],
-        nt: [r.functionName || DOW_SHORT[r.dayIndex], r.modset].filter(Boolean),
-        teamId: r.team || "", generation: 2, position: r.position || "",
-        duty: r.functionName || "", functionName: r.functionName || "",
-        rotationPosition: r.rotationPosition || "", needsPlacement: !r.location, fromInterchange: true
+        x: r.sex || "", q: "", ab: [], tr: [], nt: [DOW_SHORT[r.dayIndex]],
+        generation: 2, position: r.position || "", fromInterchange: true
       });
     });
     if (R) {
       R.roster = roster;
-      R.meta = { file: "(interchange workbook)", rows: roster.length, when: "xlsx-import", dates: [], unknown: {}, locs: locCounts, unplaced: unplaced };
+      R.meta = { file: "(interchange workbook)", rows: roster.length, when: "xlsx-import" };
       if (typeof DB !== "undefined" && DB.set) { DB.set("roster", R.roster); DB.set("rosterMeta", R.meta); }
     }
-    S.state.interchangeImported = true;
-    return { rows: roster.length, unplaced: unplaced };
+    return { rows: roster.length };
   }
 
   function importWorkbook(file) {
@@ -318,17 +349,13 @@
               location: String(g("Location") || "").trim(),
               modset: String(g("Modset") || "").trim(),
               functionName: String(g("Function") || "").trim(),
-              rotationPosition: String(g("Rotation Position") || "").trim(),
-              status: String(g("Status") || "").trim() || "WORK"
+              status: String(g("Status") || "").trim() || "WORKING"
             });
           });
         });
         var result = applyImportedRows(imported);
-        var info = document.getElementById("rosterInfo");
-        if (info) info.innerHTML = "<b>" + result.rows + "</b> imported interchange line-days (edits preserved)";
-        if (Sch() && Sch().updateStatus) Sch().updateStatus("Imported interchange workbook · " + result.rows + " working rows. Edited Location/Modset/Function kept.");
+        if (Sch() && Sch().updateStatus) Sch().updateStatus("Imported " + result.rows + " interchange rows.");
       } catch (err) {
-        console.warn(err);
         alert("Could not import workbook: " + (err && err.message ? err.message : err));
       }
     };
@@ -341,7 +368,7 @@
     var file = document.getElementById("fInterchange");
     if (btnExp && !btnExp._hooked) {
       btnExp._hooked = true;
-      btnExp.addEventListener("click", function () { exportWorkbook(); });
+      btnExp.addEventListener("click", exportWorkbook);
     }
     if (btnImp && file && !btnImp._hooked) {
       btnImp._hooked = true;
@@ -358,8 +385,8 @@
     importWorkbook: importWorkbook,
     overlayFor: overlayFor,
     setOverlay: setOverlay,
-    clearOverlay: clearOverlay,
     buildModel: buildModel,
+    classifyCell: classifyCell,
     hookUi: hookUi
   };
 
