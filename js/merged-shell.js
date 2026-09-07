@@ -19,9 +19,8 @@
     if (typeof orig === "function" && name !== "rotation") {
       try { orig.call(S, name); } catch (e) {}
     }
-    if ((name === "rotation" || name === "capacity") && S.renderPlacementMatrix) {
-      S.renderPlacementMatrix();
-    }
+    if (name === "lines" && S.renderLines) S.renderLines();
+    if ((name === "rotation" || name === "capacity") && S.renderPlacementMatrix) S.renderPlacementMatrix();
   };
   document.querySelectorAll(".tab-btn").forEach(function (btn) {
     btn.addEventListener("click", function () { S.switchTab(btn.getAttribute("data-tab")); });
@@ -41,18 +40,17 @@
   });
   applyRotTheme(localStorage.getItem("rotation.theme") || "dark");
   function loadScript(src, then) {
-    if (document.querySelector('script[src*="' + src.split("/").pop() + '"]')) {
-      if (then) then();
-      return;
-    }
+    if (document.querySelector('script[src*="' + src.split("/").pop() + '"]')) { if (then) then(); return; }
     var s = document.createElement("script");
     s.src = src;
     s.onload = then || function () {};
     document.body.appendChild(s);
   }
-  loadScript("js/f7-placement.js", function () {
-    if (S.initPlacement) S.initPlacement();
-    loadScript("js/f7-staff-fallback.js");
+  loadScript("js/lines-schema.js", function () {
+    loadScript("js/f7-placement.js", function () {
+      if (S.initPlacement) S.initPlacement();
+      loadScript("js/f7-staff-fallback.js");
+    });
   });
   S.switchTab("rotation");
 })();
