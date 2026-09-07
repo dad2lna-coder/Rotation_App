@@ -49,7 +49,9 @@
   loadScript("js/lines-schema.js", function () {
     loadScript("js/f7-placement.js", function () {
       if (S.initPlacement) S.initPlacement();
-      loadScript("js/f7-staff-fallback.js");
+      loadScript("js/f7-staff-fallback.js", function () {
+        loadScript("js/f7-roster-map.js");
+      });
     });
   });
   S.switchTab("rotation");
