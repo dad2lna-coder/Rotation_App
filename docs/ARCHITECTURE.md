@@ -205,6 +205,67 @@ Supported output/import paths include Excel, CSV, print, configuration JSON, and
 
 The source exposes `window.RB` with selected engine, rendering, ingestion, export, and editing functions. This is useful for support but is also a sign that the current application is not strongly encapsulated.
 
+## BLADE Lines → Rotation / F7 integration
+
+BLADE and Rotation share one workflow. BLADE Lines is the source model; the adapter is the boundary; F7 supplies location/team placement; the Rotation engine generates staffing lines.
+
+```text
+BLADE Lines
+    ↓
+blade-lines-adapter.js   (window.BladeLinesAdapter)
+    ↓
+Rotation compact rows
+    ↓
+F7 placement / location enrichment   (f7-placement.js, locForLineDay)
+    ↓
+blade-rotation-bridge.js
+    ↓
+Rotation engine
+    ↓
+generated rotation
+```
+
+### Responsibilities
+
+| Layer | Owns |
+|---|---|
+| BLADE Lines | Line, Position/Job Title, Sex, Mon–Sun day cells |
+| `blade-lines-adapter.js` | Day selection, time-range parse → start/end/shift, compact row shape, skipped/non-working |
+| F7 placement | Team home, zone, MODSET, `lo` enrichment |
+| Rotation engine | Ring assignment, breaks, gender/qual constraints, sheet output |
+
+### Adapter contract
+
+`window.BladeLinesAdapter` exposes:
+
+- `adapt(lines, day, options)` → `{ schema, source, dayOfWeek, dayIndex, rows, skipped }`
+- `toRotationRow(line, day, index, options)`
+- `parseTime(value)`
+- `dayIndex(day)` / `dayName(day)`
+
+Day selectors accept numeric index (0=Sun…6=Sat), short names (`Mon`), or full names (`Monday`).
+
+Day-cell values such as `0330-1400`, `03:30-14:00`, or `3:30 AM-2:00 PM` become `s`/`e` (minutes) and `sh`.  
+OFF / RDO / VAC / empty values are reported in `skipped` and do not produce working rows.
+
+### Important constraints
+
+- **BLADE Lines is the source model.** Start/End come from the selected day column, not from inventing a parallel roster.
+- **Date is unused** at this stage (`d = ""`).
+- **Location is supplied by F7 placement.** The adapter may leave `lo = ""` and `needsPlacement = true`.
+- **Qualifications are not supplied** (`q = ""`). Do not fabricate codes such as `1234Z`.
+- **Internal line key is not an employee/Kronos ID.** Keys look like `LINE-001` and exist only for the application pipeline.
+- **Sex is preserved as-is.** Missing sex stays empty; it is not defaulted to `M`.
+- **Function/duty overlay** (BAG / DFO / TDC) remains an enrichment after the base row is built; Position stays the source Position.
+
+### Script load order
+
+`js/blade-lines-adapter.js` loads before `js/blade-rotation-bridge.js` so the bridge can call `window.BladeLinesAdapter`. Existing classic-script order is otherwise unchanged.
+
+### Persistence
+
+Unchanged: IndexedDB database `rotationBuilder`, store `kv`, key `roster` / `rosterMeta` for `RS.roster`.
+
 ## Future true-module architecture
 
 ```text
