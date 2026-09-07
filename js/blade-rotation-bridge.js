@@ -87,57 +87,30 @@
     return null;
   }
 
-  /**
-   * Prefer day-cell times via BladeLinesAdapter when present.
-   * Fall back to shiftId + schedule WORK/RDO for legacy lines.
-   */
   function timesForLineDay(line, di) {
     var ad = getAdapter();
     if (ad) {
       var raw = ad.dayValueOf(line, di);
       var parsed = ad.parseTime(raw);
       if (parsed) {
-        return {
-          startMin: parsed.startMin,
-          endMin: parsed.endMin,
-          shiftName: parsed.shift,
-          fromDayCell: true,
-          raw: parsed.raw
-        };
+        return { startMin: parsed.startMin, endMin: parsed.endMin, shiftName: parsed.shift, fromDayCell: true, raw: parsed.raw };
       }
-      if (raw != null && String(raw).trim() !== "" && ad.OFF_RE && ad.OFF_RE.test(String(raw).trim())) {
-        return null;
-      }
-      if (raw != null && String(raw).trim() !== "" && !parsed) {
-        return null;
-      }
+      if (raw != null && String(raw).trim() !== "" && ad.OFF_RE && ad.OFF_RE.test(String(raw).trim())) return null;
+      if (raw != null && String(raw).trim() !== "" && !parsed) return null;
     }
-
     var sched = Sch.state.schedule[line.id] || Sch.state.schedule[String(line.id)] || [];
     if (sched[di] !== "WORK") return null;
-
     var start = 240;
     var end = start + Math.round((line.paid || 8) * 60);
     if (Sch.getEffectiveShiftTimes && line.shiftId) {
       var eff = Sch.getEffectiveShiftTimes(line.shiftId, di);
-      if (eff && Sch.timeToMin) {
-        start = Sch.timeToMin(eff.start);
-        end = Sch.timeToMin(eff.end);
-      }
+      if (eff && Sch.timeToMin) { start = Sch.timeToMin(eff.start); end = Sch.timeToMin(eff.end); }
     } else if (Sch.getShift && line.shiftId) {
       var sh = Sch.getShift(line.shiftId);
-      if (sh && Sch.timeToMin) {
-        start = Sch.timeToMin(sh.start);
-        end = Sch.timeToMin(sh.end);
-      }
+      if (sh && Sch.timeToMin) { start = Sch.timeToMin(sh.start); end = Sch.timeToMin(sh.end); }
     }
     if (end <= start) end += 1440;
-    return {
-      startMin: start,
-      endMin: end,
-      shiftName: start < 12 * 60 ? "AM" : "PM",
-      fromDayCell: false
-    };
+    return { startMin: start, endMin: end, shiftName: start < 12 * 60 ? "AM" : "PM", fromDayCell: false };
   }
 
   function pushLinesToRotation() {
@@ -176,13 +149,27 @@
         }
 
         var duty = duties[di] || duties[di % 7] || line.function || "";
+        if (duty === "PAX") duty = "";
         var title = role;
-        if (duty === "DFO") title = role + "/DFO";
-        if (duty === "BAG") title = role + "/BAG";
+        if (duty === "DFO" && role) title = role + "/DFO";
+        if (duty === "BAG" && role) title = role + "/BAG";
 
         var home = locForLineDay(line, di % 7);
         var loc = "";
         if (home) loc = home.locKey || home.checkpoint || home.zone || "";
+
+        var key = ad && ad.lineKey
+          ? ad.lineKey(line, index)
+          : ("LINE-" + String(line.id != null ? line.id : index + 1).padStart(3, "0"));
+
+        var ov = window.BladeInterchange && BladeInterchange.overlayFor
+          ? BladeInterchange.overlayFor(key, di % 7) : null;
+        if (ov) {
+          if (ov.Location) loc = ov.Location;
+          if (ov.Function != null) duty = ov.Function;
+          if (ov.Position) role = ov.Position;
+        }
+
         if (!loc) unplaced++;
         if (loc) locCounts[loc] = (locCounts[loc] || 0) + 1;
 
@@ -190,10 +177,7 @@
         if (duty) notes.push(duty + " " + DOW[di % 7]);
         else notes.push(DOW[di % 7]);
         if (home && home.modset) notes.push(home.modset);
-
-        var key = ad && ad.lineKey
-          ? ad.lineKey(line, index)
-          : ("LINE-" + String(line.id != null ? line.id : index + 1).padStart(3, "0"));
+        if (ov && ov.Modset) notes.push(ov.Modset);
 
         var sex = "";
         if (line.sex != null && line.sex !== "") sex = String(line.sex).trim().toUpperCase();
@@ -202,7 +186,11 @@
           k: key,
           n: line.lineCode || ("Line " + String(line.id != null ? line.id : index + 1).padStart(3, "0")),
           ti: title,
-          po: duty === "BAG" ? "BAG" : duty === "DFO" ? "DFO" : "TDC",
+          po: role || "",
+          duty: duty || "",
+          functionName: duty || "",
+          position: role || "",
+          rotationPosition: ov && ov["Rotation Position"] ? ov["Rotation Position"] : "",
           lo: loc,
           d: "",
           dow: di % 7,
@@ -214,7 +202,7 @@
           ab: [],
           tr: [],
           nt: notes,
-          teamId: home && home.teamId,
+          teamId: (ov && ov.Team) || (home && home.teamId),
           generation: 2,
           needsPlacement: !loc,
           sourceDayValue: times.raw || undefined
@@ -223,9 +211,7 @@
     });
 
     if (!rows.length) {
-      if (Sch.updateStatus) {
-        Sch.updateStatus("No working line-days to push (all off or unparseable).");
-      }
+      if (Sch.updateStatus) Sch.updateStatus("No working line-days to push (all off or unparseable).");
       return;
     }
 
@@ -277,11 +263,7 @@
     var orig = Sch.generate;
     Sch.generate = function () {
       orig.apply(this, arguments);
-      try {
-        ensureFuncUi();
-        if (typeof Sch.readFunctionBandsFromDom === "function") Sch.readFunctionBandsFromDom();
-        if (typeof Sch.generateFunctionAssignments === "function") Sch.generateFunctionAssignments();
-      } catch (e) { console.warn("function assign", e); }
+      try { ensureFuncUi(); } catch (e) { console.warn("func ui", e); }
       try {
         if (Sch.placeTeams) Sch.placeTeams();
         if (Sch.enrichOperationalLines) Sch.enrichOperationalLines();
