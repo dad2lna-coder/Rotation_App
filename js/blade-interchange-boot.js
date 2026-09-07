@@ -29,10 +29,10 @@
     }
     if (window.BladeInterchange && BladeInterchange.hookUi) BladeInterchange.hookUi();
   }
-  /* sanitizeRosterPo removed: Position must not be rewritten from Function. */
   function boot() {
     inject();
     if (!window.BladeInterchange) load("js/blade-interchange.js", inject);
+    load("js/interchange-day-import.js");
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
