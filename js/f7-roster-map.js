@@ -89,145 +89,70 @@
         return null;
       }
     }
-
     var sched = Sch.state.schedule[line.id] || Sch.state.schedule[String(line.id)] || [];
     if (sched[di] !== "WORK") return null;
-
-    var start = 240;
-    var end = start + Math.round((line.paid || 8) * 60);
-    if (Sch.getEffectiveShiftTimes && line.shiftId) {
-      var eff = Sch.getEffectiveShiftTimes(line.shiftId, di);
-      if (eff && Sch.timeToMin) {
-        start = Sch.timeToMin(eff.start);
-        end = Sch.timeToMin(eff.end);
-      }
-    } else if (Sch.getShift && line.shiftId) {
-      var sh = Sch.getShift(line.shiftId);
-      if (sh && Sch.timeToMin) {
-        start = Sch.timeToMin(sh.start);
-        end = Sch.timeToMin(sh.end);
+    if (ad && ad.rowStartEnd) {
+      var fb = ad.rowStartEnd(line);
+      if (fb && fb.startMin != null) {
+        return {
+          startMin: fb.startMin,
+          endMin: fb.endMin,
+          shiftName: fb.shift,
+          raw: fb.raw,
+          fromDayCell: false
+        };
       }
     }
-    if (end <= start) end += 1440;
-    return {
-      startMin: start,
-      endMin: end,
-      shiftName: start < 12 * 60 ? "AM" : "PM",
-      fromDayCell: false
-    };
+    return null;
   }
 
   function rewriteRoster() {
     var Sch = window.Scheduler;
     var RS = window.S;
-    if (!Sch || !Sch.state || !Sch.state.lines || !Sch.state.lines.length || !RS) return;
+    if (!Sch || !Sch.state || !RS) return;
+    if (Array.isArray(Sch.state.rotationInput) && Sch.state.rotationInput.length) return;
+    if (!Sch.state.lines || !Sch.state.lines.length) return;
     if (Sch.normalizeAllLineRoles) Sch.normalizeAllLineRoles();
-
     var rows = [];
     var locCounts = {};
     var unplaced = 0;
     var skipped = 0;
     var ad = window.BladeLinesAdapter;
-
     Sch.state.lines.forEach(function (line, index) {
       var pos = posOf(line);
       var sex = sexOf(line);
-      var key = ad && ad.lineKey
-        ? ad.lineKey(line, index)
-        : ("LINE-" + String(line.id != null ? line.id : index + 1).padStart(3, "0"));
+      var key = ad && ad.lineKey ? ad.lineKey(line, index) : ("LINE-" + String(line.id != null ? line.id : index + 1).padStart(3, "0"));
       var name = line.lineCode || ("Line " + String(line.id != null ? line.id : index + 1).padStart(3, "0"));
-
       for (var di = 0; di < 7; di++) {
         var times = timesForLineDay(Sch, line, di);
-        if (!times) {
-          skipped++;
-          continue;
-        }
-
-        var duty = Sch.getRotationDuty
-          ? (Sch.getRotationDuty(line.id, di) || "")
-          : ((Sch.state.functionRotation || {})[String(line.id)] || [])[di] || line.function || "";
+        if (!times) { skipped++; continue; }
+        var duty = Sch.getRotationDuty ? (Sch.getRotationDuty(line.id, di) || "") : ((Sch.state.functionRotation || {})[String(line.id)] || [])[di] || line.function || "";
         if (duty === "PAX") duty = "";
-
         var title = pos || "";
         if (duty === "DFO" && pos) title = pos + "/DFO";
         if (duty === "BAG" && pos) title = pos + "/BAG";
-
         var home = locForLineDay(Sch, line, di);
-        var loc = "";
-        if (duty === "BAG") loc = "BAG";
-        else if (duty === "DFO") loc = "DFO";
-        else if (home) loc = home.locKey || home.zone || home.checkpoint || "";
+        var loc = home ? (home.locKey || home.zone || home.checkpoint || "") : "";
         if (!loc) unplaced++;
         if (loc) locCounts[loc] = (locCounts[loc] || 0) + 1;
-
         var notes = [];
         if (duty) notes.push(duty);
         notes.push(DOW[di]);
         if (home && home.modset) notes.push(home.modset);
-
         rows.push({
-          k: key,
-          n: name,
-          ti: title,
-          po: duty === "BAG" ? "BAG" : duty === "DFO" ? "DFO" : (pos || "TDC"),
-          lo: loc,
-          d: "",
-          dow: di,
-          sh: times.shiftName,
-          s: times.startMin,
-          e: times.endMin,
-          x: sex,
-          q: "",
-          ab: [],
-          tr: [],
-          nt: notes,
-          generation: 2,
-          position: pos,
-          duty: duty || undefined,
-          needsPlacement: !loc,
-          sourceDayValue: times.raw || undefined
+          k: key, n: name, ti: title, po: pos || "", lo: loc, d: "", dow: di,
+          sh: times.shiftName, s: times.startMin, e: times.endMin, x: sex, q: "", ab: [], tr: [], nt: notes,
+          generation: 2, position: pos, duty: duty || undefined, needsPlacement: !loc, sourceDayValue: times.raw || undefined
         });
       }
     });
-
     if (!rows.length) return;
-
     if (RS.cfg && RS.cfg.titles) {
-      ["TSO", "LTSO", "STSO", "TSO/DFO", "LTSO/DFO", "STSO/DFO", "TSO/BAG", "LTSO/BAG", "STSO/BAG"].forEach(function (t) {
-        RS.cfg.titles[t] = 1;
-      });
+      ["TSO", "LTSO", "STSO", "TSO/DFO", "LTSO/DFO", "STSO/DFO", "TSO/BAG", "LTSO/BAG", "STSO/BAG"].forEach(function (t) { RS.cfg.titles[t] = 1; });
     }
-    if (RS.cfg && RS.cfg.locations) {
-      ["BAG", "DFO"].forEach(function (id) {
-        if (!RS.cfg.locations[id]) {
-          RS.cfg.locations[id] = {
-            t: id[0],
-            open: "03:30",
-            close: "23:00",
-            mods: [[{ n: 1, ct: 0 }, { n: 2, ct: 0 }]],
-            kcm: null,
-            exit: { am: 0, pm: 0 }
-          };
-        }
-      });
-    }
-
     RS.roster = rows;
-    RS.meta = {
-      file: "(BLADE lines)",
-      rows: rows.length,
-      when: "line-map",
-      dates: [],
-      unknown: {},
-      locs: locCounts,
-      unplaced: unplaced,
-      skipped: skipped
-    };
-    if (typeof DB !== "undefined" && DB.set) {
-      DB.set("roster", rows);
-      DB.set("rosterMeta", RS.meta);
-    }
+    RS.meta = { file: "(BLADE lines)", rows: rows.length, when: "line-map", dates: [], unknown: {}, locs: locCounts, unplaced: unplaced, skipped: skipped };
+    if (typeof DB !== "undefined" && DB.set) { DB.set("roster", rows); DB.set("rosterMeta", RS.meta); }
     var info = document.getElementById("rosterInfo");
     if (info) {
       var extra = unplaced ? (" · " + unplaced + " unplaced") : "";
@@ -295,7 +220,9 @@
   var prevPush = window.pushLinesToRotation;
   window.pushLinesToRotation = function () {
     if (typeof prevPush === "function") prevPush();
-    rewriteRoster();
+    if (!(window.Scheduler && Scheduler.state && Scheduler.state.rotationInput && Scheduler.state.rotationInput.length)) {
+      rewriteRoster();
+    }
   };
 
   function boot() {
