@@ -1139,6 +1139,12 @@ function boot(){
     if(!pj && window.RB_DEMO && RB_DEMO.proj){
       pj = RB_DEMO.proj; pm = RB_DEMO.projMeta;
     }
+    if((!r || !r.length) && window.RB_DEMO && RB_DEMO.roster){
+      r = RB_DEMO.roster; m = RB_DEMO.meta;
+    }
+    if(!pj && window.RB_DEMO && RB_DEMO.proj){
+      pj = RB_DEMO.proj; pm = RB_DEMO.projMeta;
+    }
     if(pj){ S.proj = pj; S.projMeta = pm || {}; }
     if(r && r.length){ S.roster = r; S.meta = m || S.meta;
       const d = (S.meta.dates||[]);
@@ -1149,6 +1155,10 @@ function boot(){
     fillTerms(); fillLocSelect(); renderAdmin(); wire(); refreshSaved();
     $("projInfo").innerHTML = projSummary();
     if(!$("iDate").value) $("iDate").value = todayKey();
+    if(window.RB_DEMO && $("iLoc") && !$("iLoc").value){
+      $("iLoc").value = "CKPT-A12";
+      $("iLoc").dispatchEvent(new Event("change"));
+    }
     if(window.RB_DEMO && $("iLoc") && !$("iLoc").value){
       $("iLoc").value = "CKPT-A12";
       $("iLoc").dispatchEvent(new Event("change"));
