@@ -55,7 +55,9 @@
             loadScript("js/f7-roster-map.js", function () {
               loadScript("js/blade-interchange.js", function () {
                 loadScript("js/blade-interchange-boot.js", function () {
-                  if (window.BladeDayRuntime && BladeDayRuntime.boot) BladeDayRuntime.boot();
+                  loadScript("js/rotation-canonical.js", function () {
+                    if (window.BladeDayRuntime && BladeDayRuntime.boot) BladeDayRuntime.boot();
+                  });
                 });
               });
             });
