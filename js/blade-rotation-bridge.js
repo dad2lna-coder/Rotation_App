@@ -1,8 +1,15 @@
 (function () {
   var Sch = window.Scheduler;
   var DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  var Adapter = null;
 
   function $(id) { return document.getElementById(id); }
+
+  function getAdapter() {
+    if (Adapter) return Adapter;
+    Adapter = window.BladeLinesAdapter || null;
+    return Adapter;
+  }
 
   function openRotationConfig() {
     if (Sch && Sch.switchTab) Sch.switchTab("rotation");
@@ -80,6 +87,59 @@
     return null;
   }
 
+  /**
+   * Prefer day-cell times via BladeLinesAdapter when present.
+   * Fall back to shiftId + schedule WORK/RDO for legacy lines.
+   */
+  function timesForLineDay(line, di) {
+    var ad = getAdapter();
+    if (ad) {
+      var raw = ad.dayValueOf(line, di);
+      var parsed = ad.parseTime(raw);
+      if (parsed) {
+        return {
+          startMin: parsed.startMin,
+          endMin: parsed.endMin,
+          shiftName: parsed.shift,
+          fromDayCell: true,
+          raw: parsed.raw
+        };
+      }
+      if (raw != null && String(raw).trim() !== "" && ad.OFF_RE && ad.OFF_RE.test(String(raw).trim())) {
+        return null;
+      }
+      if (raw != null && String(raw).trim() !== "" && !parsed) {
+        return null;
+      }
+    }
+
+    var sched = Sch.state.schedule[line.id] || Sch.state.schedule[String(line.id)] || [];
+    if (sched[di] !== "WORK") return null;
+
+    var start = 240;
+    var end = start + Math.round((line.paid || 8) * 60);
+    if (Sch.getEffectiveShiftTimes && line.shiftId) {
+      var eff = Sch.getEffectiveShiftTimes(line.shiftId, di);
+      if (eff && Sch.timeToMin) {
+        start = Sch.timeToMin(eff.start);
+        end = Sch.timeToMin(eff.end);
+      }
+    } else if (Sch.getShift && line.shiftId) {
+      var sh = Sch.getShift(line.shiftId);
+      if (sh && Sch.timeToMin) {
+        start = Sch.timeToMin(sh.start);
+        end = Sch.timeToMin(sh.end);
+      }
+    }
+    if (end <= start) end += 1440;
+    return {
+      startMin: start,
+      endMin: end,
+      shiftName: start < 12 * 60 ? "AM" : "PM",
+      fromDayCell: false
+    };
+  }
+
   function pushLinesToRotation() {
     if (!Sch || !Sch.state || !Sch.state.lines || !Sch.state.lines.length) return;
     ensurePlacement();
@@ -87,58 +147,100 @@
     var rows = [];
     var locCounts = {};
     var unplaced = 0;
-    Sch.state.lines.forEach(function (line) {
-      var sched = Sch.state.schedule[line.id] || Sch.state.schedule[String(line.id)] || [];
+    var skipped = [];
+    var ad = getAdapter();
+
+    Sch.state.lines.forEach(function (line, index) {
       var duties = (Sch.state.functionRotation || {})[String(line.id)] || [];
-      var sh = Sch.getShift ? Sch.getShift(line.shiftId) : null;
-      var start = sh && Sch.timeToMin ? Sch.timeToMin(sh.start) : 240;
-      var end = sh && Sch.timeToMin ? Sch.timeToMin(sh.end) : start + Math.round((line.paid || 8) * 60);
-      if (end <= start) end += 1440;
-      var role = Sch.lineRoleKey ? Sch.lineRoleKey(line) : (line.empClass || "TSO");
-      var shiftName = start < 12 * 60 ? "AM" : "PM";
-      var weekLen = sched.length || 7;
+      var role = Sch.lineRoleKey ? Sch.lineRoleKey(line) : (line.position || line.empClass || "TSO");
+      var weekLen = 7;
+      var sched = Sch.state.schedule[line.id] || Sch.state.schedule[String(line.id)] || [];
+      if (sched.length > weekLen) weekLen = sched.length;
+
       for (var di = 0; di < weekLen; di++) {
-        if (sched[di] !== "WORK") continue;
+        var times = timesForLineDay(line, di % 7);
+        if (!times) {
+          if (ad) {
+            var rawV = ad.dayValueOf(line, di % 7);
+            if (rawV != null && String(rawV).trim() !== "") {
+              skipped.push({
+                index: index,
+                line: line.lineCode || ("Line " + String(line.id).padStart(3, "0")),
+                raw: String(rawV).trim(),
+                day: DOW[di % 7],
+                reason: ad.OFF_RE && ad.OFF_RE.test(String(rawV).trim()) ? "non-working" : "unparseable-or-off"
+              });
+            }
+          }
+          continue;
+        }
+
         var duty = duties[di] || duties[di % 7] || line.function || "";
         var title = role;
         if (duty === "DFO") title = role + "/DFO";
         if (duty === "BAG") title = role + "/BAG";
-        var home = locForLineDay(line, di);
+
+        var home = locForLineDay(line, di % 7);
         var loc = "";
         if (home) loc = home.locKey || home.checkpoint || home.zone || "";
         if (!loc) unplaced++;
         if (loc) locCounts[loc] = (locCounts[loc] || 0) + 1;
+
         var notes = [];
         if (duty) notes.push(duty + " " + DOW[di % 7]);
         else notes.push(DOW[di % 7]);
         if (home && home.modset) notes.push(home.modset);
+
+        var key = ad && ad.lineKey
+          ? ad.lineKey(line, index)
+          : ("LINE-" + String(line.id != null ? line.id : index + 1).padStart(3, "0"));
+
+        var sex = "";
+        if (line.sex != null && line.sex !== "") sex = String(line.sex).trim().toUpperCase();
+
         rows.push({
-          k: "L" + line.id,
-          n: line.lineCode || ("Line " + String(line.id).padStart(3, "0")),
+          k: key,
+          n: line.lineCode || ("Line " + String(line.id != null ? line.id : index + 1).padStart(3, "0")),
           ti: title,
           po: duty === "BAG" ? "BAG" : duty === "DFO" ? "DFO" : "TDC",
           lo: loc,
           d: "",
           dow: di % 7,
-          sh: shiftName,
-          s: start,
-          e: end,
-          x: line.sex || "M",
-          q: "1234Z",
+          sh: times.shiftName,
+          s: times.startMin,
+          e: times.endMin,
+          x: sex,
+          q: "",
           ab: [],
           tr: [],
           nt: notes,
           teamId: home && home.teamId,
           generation: 2,
-          needsPlacement: !loc
+          needsPlacement: !loc,
+          sourceDayValue: times.raw || undefined
         });
       }
     });
-    if (!rows.length) return;
+
+    if (!rows.length) {
+      if (Sch.updateStatus) {
+        Sch.updateStatus("No working line-days to push (all off or unparseable).");
+      }
+      return;
+    }
+
     applyTitles();
     if (RS) {
       RS.roster = rows;
-      RS.meta = { file: "(Blade Gen-2 lines)", rows: rows.length, when: "f7-place", dates: [], unknown: {}, locs: locCounts };
+      RS.meta = {
+        file: "(Blade Gen-2 lines)",
+        rows: rows.length,
+        when: "f7-place",
+        dates: [],
+        unknown: {},
+        locs: locCounts,
+        skipped: skipped.length ? skipped : undefined
+      };
       if (typeof DB !== "undefined" && DB.set) {
         DB.set("roster", RS.roster);
         DB.set("rosterMeta", RS.meta);
@@ -146,7 +248,8 @@
     }
     if ($("rosterInfo")) {
       var extra = unplaced ? (" · " + unplaced + " line-days still unplaced") : "";
-      $("rosterInfo").innerHTML = "<b>" + rows.length + "</b> Gen-2 line-days · location from team-home matrix" + extra;
+      var skipInfo = skipped.length ? (" · " + skipped.length + " skipped") : "";
+      $("rosterInfo").innerHTML = "<b>" + rows.length + "</b> Gen-2 line-days · location from team-home matrix" + extra + skipInfo;
     }
     if ($("iDate")) {
       $("iDate").value = "";
