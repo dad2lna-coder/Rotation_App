@@ -39,11 +39,7 @@ window.Scheduler = window.Scheduler || {};
     lines: [],
     schedule: {},
     issues: [],
-    mode: "—",
-    // Finished 7-day operational model consumed by Rotation.
-    // Populated by BLADE+F7+function assignment or by Interchange import.
-    rotationInput: [],
-    rotationInputSource: ""
+    mode: "—"
   };
   S.shiftSeq = 6;
 })(window.Scheduler);
