@@ -6,7 +6,7 @@ window.Scheduler = window.Scheduler || {};
     open: "03:30",
     close: "23:00",
     useDynamicHours: false,
-    dayHours: null,
+    dayHours: null, // filled by ensureDayHours() — 7× {open, close}
     startDate: null,
     weekCount: 1,
     ftM: 10,
@@ -17,11 +17,13 @@ window.Scheduler = window.Scheduler || {};
     ltsoF: 1,
     stsoM: 2,
     stsoF: 2,
+    // Secondary certifications (assigned after lines exist; not part of coverage gen)
     certDfoMax: 0,
     certPaxMax: 0,
     certBagMax: 0,
     certDfoEnabled: true,
     certBagEnabled: true,
+    // Function coverage bands — set in Function Coverage modal
     functionRotation: {},
     functionCoverage: {
       enableDfo: true,
@@ -37,9 +39,7 @@ window.Scheduler = window.Scheduler || {};
     lines: [],
     schedule: {},
     issues: [],
-    mode: "—",
-    rotationInput: [],
-    rotationInputSource: ""
+    mode: "—"
   };
   S.shiftSeq = 6;
 })(window.Scheduler);
