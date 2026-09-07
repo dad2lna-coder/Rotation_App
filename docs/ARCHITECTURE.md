@@ -56,7 +56,11 @@ Uses `js/vendor/xlsx.js`.
 Tabs: Summary, Sunday–Saturday, Placement, Function, Validation, Raw_BLADE.
 
 Day tabs are the intermediate rows Rotation will consume.
-Imported Location / Modset / Team / Function / Position / Start / End are kept in an overlay and are not rebuilt from BLADE.
+
+Canonical state is `Scheduler.state.rotationInput` (source in `rotationInputSource`).
+Interchange import writes that array and sets source to `interchange`.
+`pushLinesToRotation` consumes `rotationInput` only; it does not rebuild from `state.lines`.
+Overlay, if present, is applied into `rotationInput` before Rotation sees it.
 
 Missing Position, time, Team, Location, Modset, or duplicates go on the Validation tab.
 
