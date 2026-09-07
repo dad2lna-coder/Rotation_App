@@ -14,11 +14,532 @@
   <link rel="stylesheet" href="css/rotation-blade.css?v=20260904c" />
 </head>
 <body class="console-skin">
-<!-- truncated for tool size; will use local full file via alternate path -->
+  <div id="blade-intro"><div class="bezel"><div class="crt"><div class="scan"></div><h1 class="banner">**** CHAOS BASIC V2 ****</h1><div class="sub">64K RAM SYSTEM&nbsp;&nbsp;38911 BYTES FREE</div><div id="blade-term"></div><pre id="blade-art"></pre><div id="blade-greet"></div></div><div class="chrome"><span><span class="led"></span>BLADE CONSOLE</span><span>PRESS Y / N WHEN PROMPTED</span></div></div></div>
+  <header class="topbar">
+    <div class="console-mast">
+      <div class="brand">BLADE AIRPORT OPS V2.0<span>WORKFORCE ALLOCATION SYSTEM</span></div>
+      <div class="console-meta">AIRPORT: <b id="console-airport">DFW</b></div>
+      <div class="console-meta">SCHEDULE WEEKS: <b id="console-weeks">1</b></div>
+      <div class="console-meta">STAFF TOTAL: <b id="console-staff">—</b></div>
+      <div class="console-meta">SYSTEM TIME: <b id="console-time">--:--:--</b></div>
+      <div class="console-meta">DATE: <b id="console-date">--/--/----</b></div>
+      <div class="console-status-chip">STATUS: READY</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn" id="btn-instructions">[HLP] INSTRUCTIONS</button>
+      <button class="btn" id="btn-airport-config">[CFG] AIRFIELD</button>
+      <button class="btn btn-amber" id="btn-generate">[GEN] GENERATE</button>
+      <button class="btn" id="btn-export">[EXP] EXPORT</button>
+      <button class="btn" id="btn-import">[IMP] IMPORT</button>
+      <input type="file" id="file-import" accept="application/json,.json" style="display:none" />
+      <button class="btn btn-red" id="btn-clear">[CLR] CLEAR</button>
+      <div id="rot-theme-seg" class="rot-theme-seg">
+        <button type="button" data-theme="dark">Dark</button>
+        <button type="button" data-theme="light">Light</button>
+        <button type="button" data-theme="vivid">Vivid</button>
+      </div>
+    </div>
+  </header>
+  <div class="status" id="status">Loading…</div>
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="setup">[F1] SETUP</button>
+    <button class="tab-btn" data-tab="coverage">[F2] COVERAGE</button>
+    <button class="tab-btn" data-tab="lines">[F3] LINES</button>
+    <button class="tab-btn" data-tab="teams">[F4] TEAMS</button>
+    <button class="tab-btn" data-tab="reports">[F5] REPORTS</button>
+    <button class="tab-btn" data-tab="capacity">[F6] CAPACITY</button>
+    <button class="tab-btn" data-tab="rotation">[F7] ROTATION</button>
+  </nav>
+  <main>
+    <section class="panel active" id="tab-setup">
+      <div class="card"><div class="section-title">What this is</div><p class="muted" style="margin:0"><strong>BLADE</strong> staffing balancer. <strong>FT / PT</strong> are operational TSO. <strong>LTSO/STSO M/F</strong> are management.</p></div>
+      <input type="hidden" id="cfg-open" value="03:30" /><input type="hidden" id="cfg-close" value="23:00" />
+      <div class="card" id="card-period"><div class="section-title">Schedule period</div><div class="period-row" style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center"><label>Schedule start <input type="date" id="cfg-start" /></label><label>Weeks <input type="number" id="cfg-weeks" min="1" max="8" value="1" style="width:4.5rem" /></label></div></div>
+      <details class="card setup-fold" id="card-fte"><summary class="section-title">FTE</summary>
+        <div class="fte-block">
+          <div class="fte-role" style="text-align:center;font-weight:700;margin:0.85rem 0 0.35rem">FT TSO</div>
+          <div class="fte-sex-row" style="display:flex;justify-content:center;gap:2rem;flex-wrap:wrap"><label>Male <input type="number" id="cfg-ft-m" min="0" value="10" style="width:4.5rem" /></label><label>Female <input type="number" id="cfg-ft-f" min="0" value="10" style="width:4.5rem" /></label></div>
+          <div class="fte-role" style="text-align:center;font-weight:700;margin:0.85rem 0 0.35rem">PT TSO</div>
+          <div class="fte-sex-row" style="display:flex;justify-content:center;gap:2rem;flex-wrap:wrap"><label>Male <input type="number" id="cfg-pt-m" min="0" value="4" style="width:4.5rem" /></label><label>Female <input type="number" id="cfg-pt-f" min="0" value="4" style="width:4.5rem" /></label></div>
+          <div class="fte-role" style="text-align:center;font-weight:700;margin:0.85rem 0 0.35rem">LTSO</div>
+          <div class="fte-sex-row" style="display:flex;justify-content:center;gap:2rem;flex-wrap:wrap"><label>Male <input type="number" id="cfg-ltso-m" min="0" value="1" style="width:4.5rem" /></label><label>Female <input type="number" id="cfg-ltso-f" min="0" value="1" style="width:4.5rem" /></label></div>
+          <div class="fte-role" style="text-align:center;font-weight:700;margin:0.85rem 0 0.35rem">STSO</div>
+          <div class="fte-sex-row" style="display:flex;justify-content:center;gap:2rem;flex-wrap:wrap"><label>Male <input type="number" id="cfg-stso-m" min="0" value="2" style="width:4.5rem" /></label><label>Female <input type="number" id="cfg-stso-f" min="0" value="2" style="width:4.5rem" /></label></div>
+          <div class="toolbar" style="margin-top:0.75rem"><button type="button" class="btn btn-amber" id="btn-save-staffing">Save staffing</button><span class="muted">FTE + function coverage only. No lines.</span></div>
+        </div>
+      </details>
+      <details class="card setup-fold" id="card-func"><summary class="section-title">Function coverage</summary>
+        <div class="fc-pool-row" style="display:flex;flex-wrap:wrap;gap:0.65rem 1rem;align-items:center">
+          <label>DFO STSO <input type="number" id="fc-pool-stso" min="0" value="1" style="width:4rem" /></label>
+          <label>DFO LTSO <input type="number" id="fc-pool-ltso" min="0" value="1" style="width:4rem" /></label>
+          <label>DFO TSO <input type="number" id="fc-pool-tso" min="0" value="4" style="width:4rem" /></label><label>BAG TSO <input type="number" id="fc-pool-bag" min="0" value="2" style="width:4rem" /></label><button type="button" class="btn btn-amber" id="fc-generate">Assign DFO / BAG days</button>
+          <label>Phase threshold (min) <input type="number" id="fc-phase-thr" min="0" max="120" value="15" style="width:4rem" /></label>
+          <label class="follow-me-label"><input type="checkbox" id="fc-ampm-split" checked /> 50/50 AM–PM split</label>
+          <button type="button" class="btn" id="fc-add-band">+ Add band</button>
+        </div>
+        <div class="lines-scroll" style="max-height:40vh;margin-top:0.75rem"><table class="data-table"><thead><tr><th>Start</th><th>End</th><th>Min STSO</th><th>Min LTSO</th><th>Min TSO</th><th></th></tr></thead><tbody id="fc-bands-tbody"></tbody></table></div>
+        <p class="muted" id="fc-preview" style="margin-top:0.75rem"></p>
+      </details>
+      <div class="card"><div class="section-title">Shifts</div><div class="toolbar"><button type="button" class="btn" id="btn-add-shift">+ Add shift</button></div><div class="lines-scroll" style="max-height:none"><table class="data-table"><thead><tr><th>Name</th><th>Start</th><th>End</th><th>Phase</th><th>Paid h</th><th>TSO force</th><th>LTSO force</th><th>STSO force</th><th>Hard RDOs (Sun–Sat)</th><th>Day times</th></tr></thead><tbody id="shifts-tbody"></tbody></table></div></div>
+      <div id="issues"></div>
+    </section>
+    <section class="panel" id="tab-coverage"><div class="card"><div class="section-title">30-minute headcount by day of week (Sun–Sat)</div><p class="muted" id="coverage-summary">Generate to compute staffing by 30-minute slot and day.</p><div class="toolbar" style="flex-wrap:wrap;gap:0.75rem"><label class="follow-me-label"><input type="checkbox" id="cov-role-stso" /> STSO</label><label class="follow-me-label"><input type="checkbox" id="cov-role-ltso" /> LTSO</label><label class="follow-me-label"><input type="checkbox" id="cov-role-tso" checked /> TSO</label><label class="follow-me-label"><input type="radio" name="cov-func-view" value="all" checked /> All</label><label class="follow-me-label"><input type="radio" name="cov-func-view" value="bag" /> Baggage</label><label class="follow-me-label"><input type="radio" name="cov-func-view" value="pax" /> PAX</label></div><div class="lines-scroll"><table class="data-table cov-matrix" id="coverage-matrix"><thead id="coverage-matrix-head"></thead><tbody id="coverage-matrix-body"></tbody></table></div></div><div class="card"><div class="section-title">Typical day profile (bars)</div><div class="cov-bars" id="coverage-bars"></div></div><div class="card"><div class="section-title">Shift mix</div><table class="data-table"><thead><tr><th>Shift</th><th>Window</th><th>FT M/F</th><th>PT M/F</th><th>LTSO M/F</th><th>STSO M/F</th><th>TSO tot</th><th>All</th></tr></thead><tbody id="shift-summary-body"></tbody></table></div></section>
+    <section class="panel" id="tab-lines"><div class="card"><div class="section-title">Bid lines</div><div class="toolbar" id="lines-toolbar"><label>Filter role <select id="lines-filter-role"><option value="ALL" selected>All</option><option value="STSO">STSO</option><option value="LTSO">LTSO</option><option value="TSO">TSO (FT/PT)</option></select></label><label>Filter shift <select id="lines-filter-shift"><option value="">All shifts</option></select></label><label>Filter sex <select id="lines-filter-sex"><option value="">All</option><option value="M">M</option><option value="F">F</option></select></label><label>Filter team <select id="lines-filter-team"><option value="">All</option><option value="__none__">Unassigned</option></select></label><button type="button" class="btn btn-amber" id="btn-export-lines-excel">Export Excel (.xlsx)</button></div><div class="lines-scroll lines-scroll-wide"><table class="data-table lines-editable"><thead id="lines-thead"></thead><tbody id="lines-tbody"></tbody></table></div></div></section>
+    <section class="panel" id="tab-teams"><div class="card"><div class="section-title">Team forming</div><div class="toolbar"><button type="button" class="btn btn-amber" id="btn-team-new">+ New team</button><button type="button" class="btn btn-amber" id="btn-team-build">Build</button><span class="muted" id="team-count-hint">No teams yet</span></div><div class="toolbar team-arch-bar" id="team-architecture"><label>STSO <input type="number" id="arch-stso" min="0" max="20" value="1" style="width:3.5rem"></label><label>LTSO <input type="number" id="arch-ltso" min="0" max="20" value="1" style="width:3.5rem"></label><label>TSO <input type="number" id="arch-tso" min="0" max="50" value="6" style="width:3.5rem"></label><button type="button" class="btn btn-amber" id="btn-team-auto-form">Auto-form teams</button><span class="muted" id="arch-hint"></span></div><div class="toolbar" id="team-filters"></div></div><div class="card"><div class="section-title">Unassigned pool</div><div id="team-pool" class="team-pool"></div></div><div class="card" id="team-boards-card"><div class="section-title"><span>Teams</span><button type="button" class="btn btn-amber" id="btn-team-new-2">+ New team</button></div><div id="team-boards" class="team-boards"></div></div></section>
+    <section class="panel" id="tab-capacity"><div class="card"><div class="section-title">Checkpoint capacity (TSO / STSO / LTSO)</div><p class="muted" id="capacity-summary">Open Airfield to set lanes and TSO cost per program.</p><div class="lines-scroll"><table class="data-table"><thead><tr><th>Terminal</th><th>Checkpoint</th><th>From</th><th>Lanes</th><th>Program</th><th>TSO / lane</th><th>TSO needed</th><th>Sup seats</th></tr></thead><tbody id="capacity-tbody"></tbody></table></div></div></section>
+    <section class="panel" id="tab-reports"><div class="card"><div class="section-title">Management reports</div><div class="toolbar" style="flex-wrap:wrap;gap:0.75rem"><label class="follow-me-label"><input type="radio" name="report-which" value="passenger" checked /> Passenger</label><label class="follow-me-label"><input type="radio" name="report-which" value="baggage" /> Baggage / DFO duty</label><label class="follow-me-label"><input type="radio" name="report-which" value="total" /> Total</label><label class="follow-me-label"><input type="radio" name="report-which" value="dfoPool" /> DFO pool</label></div><div id="report-main"></div></div><div class="card"><div id="report-gender"></div></div></section>
+      <section class="panel" id="tab-rotation">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-logo" viewBox="0 0 24 24"><path d="M12 3l7 4.5v9L12 21l-7-4.5v-9L12 3z"/><path d="M12 8.2l3.4 2.2v4.4L12 17l-3.4-2.2v-4.4L12 8.2z"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 17v2a1 1 0 001 1h14a1 1 0 001-1v-2"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-5.7 7-11a7 7 0 10-14 0c0 5.3 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></symbol>
+<symbol id="i-lanes" viewBox="0 0 24 24"><path d="M4 4v16M10 4v16M14 4v16M20 4v16"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L4.5 13.5H11L10 22l8.5-11.5H12L13 2z"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 10-2.3 5.7"/><path d="M20 5v6h-6"/></symbol>
+<symbol id="i-redo" viewBox="0 0 24 24"><path d="M4 13a8 8 0 1114 5.3"/><path d="M4 19v-6h6"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4.5L19 9.5a2.1 2.1 0 10-3-3L5.5 17V20z"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M8 3v6h7M8 21v-6h8v6"/></symbol>
+<symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 4v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/></symbol>
+<symbol id="i-print" viewBox="0 0 24 24"><path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 15h10v6H7z"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 6h16M9 6V4h6v2M6 6l1 14h10l1-14"/></symbol>
+<symbol id="i-eraser" viewBox="0 0 24 24"><path d="M8 20H4l-1-4 11-11a2 2 0 013 0l4 4a2 2 0 010 3L12 20H8z"/><path d="M9 12l5 5"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-userplus" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M18 8v6M15 11h6"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 019.5 4a8.5 8.5 0 1010.5 10.5z"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.2 4.2l1.5 1.5M18.3 18.3l1.5 1.5M2 12h2M20 12h2M4.2 19.8l1.5-1.5M18.3 5.7l1.5-1.5"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/><path d="M18.5 16l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2z"/></symbol>
+<symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+<symbol id="i-slider" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 16H3l9-16z"/><path d="M12 10v4M12 17.4v.2"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8.2v.2"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 13l4.5 4.5L19 7"/></symbol>
+<symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></symbol>
+<symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
+<symbol id="i-badge" viewBox="0 0 24 24"><circle cx="12" cy="9" r="5"/><path d="M8.5 13.5L7 21l5-2.5L17 21l-1.5-7.5"/></symbol>
+<symbol id="i-map" viewBox="0 0 24 24"><path d="M9 4L3 6.5v14L9 18l6 2.5 6-2.5v-14L15 6.5 9 4z"/><path d="M9 4v14M15 6.5v14"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="7.5" r="1.4"/></symbol>
+<symbol id="i-cols" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></symbol>
+<symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z"/><path d="M14 3v5h5"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2.5h8a2 2 0 012 2V18a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></symbol>
+</defs></svg>
+<div id="app">
+ <!-- ===================== TOP BAR ===================== -->
+ 
+
+ <div class="main">
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="side" id="sideBar">
+   <div class="sideScroll">
+
+    <div class="grp">
+     <span class="lbl"><svg class="ic sm"><use href="#i-db"/></svg>Roster Data</span>
+     <input type="file" id="fRoster" accept=".xlsx,.xls,.csv">
+     <button class="btn wide" id="bUpload"><svg class="ic sm"><use href="#i-upload"/></svg>Upload Roster</button>
+     <div style="height:8px"></div>
+     <button class="btn wide sm" id="bDemo"><svg class="ic sm"><use href="#i-bolt"/></svg>Load demo roster</button>
+     <div class="hint" id="rosterInfo">No roster loaded. Use Load demo roster to try the tool.</div>
+    </div>
+
+    <div class="grp">
+     <span class="lbl"><svg class="ic sm"><use href="#i-chart"/></svg>Passenger Projections</span>
+     <input type="file" id="fProj" accept=".xlsx,.xls,.csv">
+     <button class="btn wide sm" id="bProj"><svg class="ic sm"><use href="#i-upload"/></svg>Upload Projections</button>
+     <div class="hint" id="projInfo">None loaded — lane demand will not be checked.</div>
+    </div>
+
+    <div class="grp">
+     <span class="lbl"><svg class="ic sm"><use href="#i-cal"/></svg>Date</span>
+     <input type="date" id="iDate">
+    </div>
+
+    <div class="grp">
+     <span class="lbl"><svg class="ic sm"><use href="#i-pin"/></svg>Terminal &amp; Location</span>
+     <select id="iTerm"><option value="">All terminals</option></select>
+     <div style="height:8px"></div>
+     <select id="iLoc"><option value="">Select location…</option></select>
+    </div>
+
+    <div class="grp">
+     <span class="lbl"><svg class="ic sm"><use href="#i-clock"/></svg>Shift</span>
+     <div class="row">
+      <select id="iShift"><option value="AM">AM</option><option value="PM">PM</option></select>
+      <select id="iSeed"><option value="">Random</option></select>
+     </div>
+     <div class="hint" id="shiftHint">AM ends 11:00 · PM starts 11:30</div>
+    </div>
+
+    <div class="grp">
+     <span class="lbl"><svg class="ic sm"><use href="#i-clock"/></svg>Sheet Window — override</span>
+     <div class="row"><input type="time" id="iStart" step="1800"><input type="time" id="iEnd" step="1800"></div>
+     <div class="hint">Blank uses the location's own hours.</div>
+    </div>
+
+    <div class="grp">
+     <span class="lbl"><svg class="ic sm"><use href="#i-lanes"/></svg>Active Lanes</span>
+     <div id="laneToggles" class="hint">Select a location.</div>
+    </div>
+
+    <div class="grp">
+     <span class="lbl"><svg class="ic sm"><use href="#i-edit"/></svg>Roster Changes</span>
+     <button class="btn wide sm" id="bAddOfficer" disabled><svg class="ic sm"><use href="#i-userplus"/></svg>Add Officer to Sheet</button>
+     <div style="height:8px"></div>
+     <button class="btn wide sm" id="bAdjust" disabled><svg class="ic sm"><use href="#i-slider"/></svg>Absences · Training · Restrictions</button>
+    </div>
+
+    <div class="grp">
+     <span class="lbl"><svg class="ic sm"><use href="#i-folder"/></svg>Saved Sheets</span>
+     <select id="iSaved"><option value="">— saved sheets —</option></select>
+     <div class="row" style="margin-top:8px">
+      <button class="btn sm" id="bLoad">Load</button>
+      <button class="btn sm" id="bSave" disabled><svg class="ic sm"><use href="#i-save"/></svg>Save</button>
+      <button class="btn sm danger" id="bDelSheet" style="flex:0 0 auto"><svg class="ic sm"><use href="#i-trash"/></svg></button>
+     </div>
+    </div>
+
+   </div>
+
+   <div class="sideFoot">
+    <button class="btn pri wide lg" id="bGen"><svg class="ic"><use href="#i-bolt"/></svg>Generate Rotation</button>
+    <div class="row" style="margin-top:9px">
+     <button class="btn sm" id="bReroll" disabled><svg class="ic sm"><use href="#i-refresh"/></svg>Reroll</button>
+     <button class="btn sm" id="bResolve" disabled><svg class="ic sm"><use href="#i-redo"/></svg>Re-solve</button>
+    </div>
+   </div>
+  </aside>
+
+  <!-- ===================== WORK AREA ===================== -->
+  <div class="work">
+
+   <!-- ---------- BUILD ---------- -->
+   <section class="view on" id="buildView">
+    <div class="tools">
+     <div class="meta" id="sheetMeta"><span class="pill">No sheet</span></div>
+     <button class="btn sm" id="bXlsx" disabled><svg class="ic sm"><use href="#i-dl"/></svg>Excel</button>
+     <button class="btn sm" id="bCsv" disabled><svg class="ic sm"><use href="#i-dl"/></svg>CSV</button>
+     <button class="btn sm" id="bPrint" disabled><svg class="ic sm"><use href="#i-print"/></svg>Print</button>
+     <div class="sep"></div>
+     <button class="btn sm gho" id="bClearMan" disabled><svg class="ic sm"><use href="#i-eraser"/></svg>Clear Manual</button>
+    </div>
+
+    <div class="scroll" id="sheetWrap">
+     <div id="printHead"></div>
+     <div id="sheetLegend" style="display:none"></div>
+     <div class="empty" id="emptyState">
+      <div class="eic"><svg class="ic" style="width:28px;height:28px"><use href="#i-grid"/></svg></div>
+      <h3>No rotation generated</h3>
+      <p>Upload a roster, then pick a date, location and shift. The tool builds the ring rotation, schedules breaks, enforces gender pairing at Body Scanner and Z-qual on CT lanes, then flags anything it could not satisfy.</p>
+     </div>
+     <div id="printLegend"></div>
+    </div>
+
+    <div class="legend" id="legendBar" style="display:none">
+     <div class="lg"><span class="sw" style="background:var(--cell)"></span>Assigned</div>
+     <div class="lg"><span class="sw" style="background:var(--brkB);border-color:var(--brkF)"></span>B — Break</div>
+     <div class="lg"><span class="sw" style="background:var(--trnB);border-color:var(--trnF)"></span>TRN — Training</div>
+     <div class="lg"><span class="sw" style="background:var(--lvB)"></span>LV — Leave / Call-off</div>
+     <div class="lg"><span class="sw" style="background:var(--soB);border-color:var(--soF)"></span>SO — Body Scanner</div>
+     <div class="lg"><span class="sw" style="background:var(--vioB);border-color:var(--vioF)"></span>Rule violation</div>
+     <div class="lg"><span class="sw" style="box-shadow:inset 0 0 0 2px var(--manOut)"></span>Manual edit</div>
+     <div class="lg"><span class="sw" style="background:var(--offB)"></span>Off shift</div>
+     <div class="lg" style="margin-left:auto;color:var(--tx2)">Click any cell to change the position.</div>
+    </div>
+
+    <div class="diag" id="diagPanel" style="display:none">
+     <div class="diagHead" id="diagToggle">
+      <svg class="ic sm" style="color:var(--tx3)"><use href="#i-info"/></svg>
+      <h4>Diagnostics</h4>
+      <span id="diagCount" class="scount"></span>
+      <svg class="ic sm chev"><use href="#i-chev"/></svg>
+     </div>
+     <div class="diagBody" id="diagList"></div>
+    </div>
+   </section>
+
+   <!-- ---------- ADMIN ---------- -->
+   <section class="view" id="adminView">
+    <div class="tools">
+     <div class="meta"><span class="pill ac"><svg class="ic sm"><use href="#i-lock"/></svg>Changes apply immediately and persist locally</span></div>
+     <button class="btn sm" id="bExpCfg"><svg class="ic sm"><use href="#i-dl"/></svg>Export Config</button>
+     <button class="btn sm" id="bImpCfg"><svg class="ic sm"><use href="#i-upload"/></svg>Import Config</button>
+     <button class="btn sm pri" id="bBuildTool"><svg class="ic sm"><use href="#i-box"/></svg>Export Configured Tool</button>
+     <div class="sep"></div>
+     <button class="btn sm danger" id="bResetCfg">Reset Defaults</button>
+     <input type="file" id="fCfg" accept=".json">
+    </div>
+
+    <div class="adm"><div class="admWrap">
+
+     <div class="card">
+      <h3><svg class="ic"><use href="#i-slider"/></svg>Rotation Rules</h3>
+      <div class="sub">Core engine behaviour. Every rule here warns rather than blocks — any cell stays editable.</div>
+      <div class="g4">
+       <div><span class="lbl">Slot length (min)</span><input type="number" id="cSlot" min="5" max="60" step="5"></div>
+       <div><span class="lbl">AM last column</span><input type="time" id="cSeamAM" step="1800"></div>
+       <div><span class="lbl">PM first column</span><input type="time" id="cSeamPM" step="1800"></div>
+       <div><span class="lbl">Females per modset</span><input type="number" id="cFem" min="0" max="12"></div>
+      </div>
+      <div class="g4" style="margin-top:13px">
+       <div><span class="lbl">Break target / lane</span><input type="number" id="cBrkT" min="1" max="4"></div>
+       <div><span class="lbl">Break max / lane</span><input type="number" id="cBrkM" min="1" max="6"></div>
+       <div><span class="lbl">Hours for 2nd break</span><input type="number" id="cBrkH" min="1" max="12" step=".5"></div>
+       <div><span class="lbl">Lane close threshold</span><input type="number" id="cLaneMin" min="1" max="12"></div>
+      </div>
+      <div style="margin-top:14px">
+       <label class="chk"><input type="checkbox" id="cAllowRepeat"> Allow consecutive same position when otherwise infeasible</label>
+       <label class="chk"><input type="checkbox" id="cBreakClears"> Break clears position history (may return to same seat after B)</label>
+       <label class="chk"><input type="checkbox" id="cFemScale"> Female minimum scales down when Body Scanner is unstaffed</label>
+       <label class="chk"><input type="checkbox" id="cPinSingle"> Pin sole eligible officer to constrained position (flagged)</label>
+       <label class="chk"><input type="checkbox" id="cStrictShift"> Strict shift matching — an AM sheet shows AM officers only, PM shows PM only</label>
+      </div>
+      <div style="margin-top:14px">
+       <span class="lbl">Shortfall drop order — last filled drops first</span>
+       <input type="text" id="cDrop">
+       <div class="hint">Comma-separated position families in fill priority. Default: M,X,D,P,EXIT,KCM,T,SO</div>
+      </div>
+      <div style="margin-top:13px">
+       <span class="lbl">Ring order — modset rotation sequence</span>
+       <input type="text" id="cRing">
+       <div class="hint">A = lane A of the modset, B = lane B. SO-A / SO-B are the two Body Scanner seats (both print as SO#).</div>
+      </div>
+     </div>
+
+     <div class="card">
+      <h3><svg class="ic"><use href="#i-badge"/></svg>Job Titles in Rotation</h3>
+      <div class="sub">Titles from the roster that get placed in the ring. Untick to exclude from generated sheets — they can still be added by hand.</div>
+      <div id="titleList" class="g4"></div>
+     </div>
+
+     <div class="card">
+      <h3><svg class="ic"><use href="#i-map"/></svg>Locations, Lanes &amp; Modsets</h3>
+      <div class="sub">Lanes marked CT require the Z qualification on that lane's own seats (TDC / Divest / X-ray / PSO). Shared Body Scanner and WTMD seats are not Z-gated.</div>
+      <div id="locList"></div>
+      <button class="btn sm" id="bAddLoc" style="margin-top:10px"><svg class="ic sm"><use href="#i-plus"/></svg>Add Location</button>
+     </div>
+
+     <div class="card">
+      <h3><svg class="ic"><use href="#i-grid"/></svg>Position Codes</h3>
+      <div class="sub">Scope <b>lane</b> = one per lane, numbered by lane. Scope <b>modset</b> = one per modset, numbered by modset. Scope <b>site</b> = one per location.</div>
+      <table class="dt" id="posTable"></table>
+      <button class="btn sm" id="bAddPos" style="margin-top:10px"><svg class="ic sm"><use href="#i-plus"/></svg>Add Position</button>
+     </div>
+
+     <div class="card">
+      <h3><svg class="ic"><use href="#i-tag"/></svg>Qualifications</h3>
+      <div class="sub">Single-character codes parsed from the roster's Quals column. Requirements per position can be set here; only Z-on-CT-lanes is enforced by default.</div>
+      <div id="qualList" style="margin-bottom:13px"></div>
+      <div class="row" style="max-width:340px">
+       <input type="text" id="iNewQual" maxlength="2" placeholder="New code">
+       <button class="btn sm" id="bAddQual"><svg class="ic sm"><use href="#i-plus"/></svg>Add</button>
+      </div>
+      <div style="margin-top:18px">
+       <span class="lbl">Position Qualification Requirements</span>
+       <table class="dt" id="qualMapTable"></table>
+      </div>
+      <div style="margin-top:18px">
+       <span class="lbl">Unrecognized characters found in roster</span>
+       <div id="unkQuals" class="hint">Upload a roster to scan.</div>
+      </div>
+     </div>
+
+     <div class="card">
+      <h3><svg class="ic"><use href="#i-chart"/></svg>Passenger Projections</h3>
+      <div class="sub">Turns an hourly passenger forecast into a per-hour lane requirement, then compares it with the lanes you have open and the staff you have on the floor.</div>
+      <div class="g4">
+       <div><span class="lbl">Counting mode</span>
+        <select id="pMode">
+         <option value="standard">Standard only</option>
+         <option value="combined">Standard + PreCheck together</option>
+         <option value="separate">Standard and PreCheck separately</option>
+        </select></div>
+       <div><span class="lbl">Passengers per lane / hour</span><input type="number" id="pPax" min="20" max="600" step="10"></div>
+       <div><span class="lbl">PreCheck per lane / hour</span><input type="number" id="pPre" min="20" max="900" step="10"></div>
+       <div><span class="lbl">Peak factor</span><input type="number" id="pPeak" min="1" max="2" step="0.05"></div>
+      </div>
+      <div class="g4" style="margin-top:13px">
+       <div><span class="lbl">Minimum lanes open</span><input type="number" id="pMin" min="0" max="6"></div>
+       <div><span class="lbl">Officers — first lane</span><input type="number" id="pFirst" min="1" max="12"></div>
+       <div><span class="lbl">Officers — each extra lane</span><input type="number" id="pExtra" min="1" max="12"></div>
+       <div><span class="lbl">Loaded</span><input type="text" id="pLoaded" readonly></div>
+      </div>
+      <div class="hint" style="margin-top:12px" id="pExplain"></div>
+      <div style="margin-top:16px">
+       <span class="lbl">Projections file columns</span>
+       <div class="g3" id="pMapList"></div>
+      </div>
+      <div class="g2" style="margin-top:13px;max-width:520px">
+       <div><span class="lbl">Standard metric contains</span><input type="text" id="pStdKey"></div>
+       <div><span class="lbl">PreCheck metric contains</span><input type="text" id="pPreKey"></div>
+      </div>
+     </div>
+
+     <div class="card">
+      <h3><svg class="ic"><use href="#i-cols"/></svg>Column Mapping</h3>
+      <div class="sub">Header names to read from the roster workbook. Update here if the source file's headers change — no code edit needed.</div>
+      <div class="g3" id="mapList"></div>
+     </div>
+
+     <div class="card">
+      <h3><svg class="ic"><use href="#i-pin"/></svg>Location Name Aliases</h3>
+      <div class="sub">Roster spellings normalised to canonical IDs. Hyphen/space and zero-padding are handled automatically; add explicit overrides here.</div>
+      <table class="dt" id="aliasTable"></table>
+      <div class="row" style="max-width:520px;margin-top:10px">
+       <input type="text" id="iAliasFrom" placeholder="Roster spelling"><input type="text" id="iAliasTo" placeholder="Canonical ID">
+       <button class="btn sm" id="bAddAlias" style="flex:0 0 auto"><svg class="ic sm"><use href="#i-plus"/></svg>Add</button>
+      </div>
+     </div>
+
+     <div class="card">
+      <h3><svg class="ic"><use href="#i-lock"/></svg>Persistent Restrictions</h3>
+      <div class="sub">Bound to KronosID, so they survive roster re-uploads. A restricted officer is pinned to their allowed positions and excluded from lane minimums; the solver covers their breaks with unrestricted staff.</div>
+      <table class="dt" id="restTable"></table>
+      <div class="hint" id="restEmpty">None set. Add from the Absences · Training · Restrictions dialog.</div>
+     </div>
+
+     <div class="card">
+      <h3><svg class="ic"><use href="#i-db"/></svg>Data &amp; Storage</h3>
+      <div class="sub">Everything lives in this browser only. Nothing is transmitted; the file has no network permissions.</div>
+      <div class="row" style="max-width:620px">
+       <button class="btn sm" id="bExpAll"><svg class="ic sm"><use href="#i-dl"/></svg>Export Briefcase</button>
+       <button class="btn sm" id="bImpAll"><svg class="ic sm"><use href="#i-upload"/></svg>Import Briefcase</button>
+       <button class="btn sm danger" id="bWipe"><svg class="ic sm"><use href="#i-trash"/></svg>Wipe Local Data</button>
+      </div>
+      <input type="file" id="fAll" accept=".json">
+      <div class="hint" id="storeInfo" style="margin-top:12px"></div>
+     </div>
+
+    </div></div>
+   </section>
+  </div>
+ </div>
+</div>
+
+<!-- ===================== MODALS ===================== -->
+<div class="ov" id="ovAdj">
+ <div class="mod wide">
+  <div class="mh"><svg class="ic"><use href="#i-slider"/></svg><h3>Absences · Training · Restrictions</h3><button class="x" data-close><svg class="ic"><use href="#i-x"/></svg></button></div>
+  <div class="mb">
+   <div class="hint" style="margin-bottom:14px">Leave, call-offs and shift trades already read from the roster's Remarks column. Use this for anything not in the file — late callouts, training added after publish, or temporary restrictions.</div>
+   <table class="dt" id="adjTable"></table>
+  </div>
+  <div class="mf"><button class="btn" data-close>Close</button><button class="btn pri" id="bAdjApply"><svg class="ic sm"><use href="#i-redo"/></svg>Apply &amp; Re-solve</button></div>
+ </div>
+</div>
+
+<div class="ov" id="ovAdd">
+ <div class="mod wide">
+  <div class="mh"><svg class="ic"><use href="#i-userplus"/></svg><h3>Add Officer to Sheet</h3><button class="x" data-close><svg class="ic"><use href="#i-x"/></svg></button></div>
+  <div class="mb">
+   <div class="seg" id="addSeg" style="margin-bottom:16px">
+    <button class="on" data-add="roster">From another location</button>
+    <button data-add="manual">Enter manually</button>
+   </div>
+
+   <div id="addRoster">
+    <div class="row" style="margin-bottom:12px">
+     <input type="text" id="addSearch" placeholder="Search name, title or qualification…">
+     <select id="addSrcLoc" style="max-width:230px"><option value="">All other locations</option></select>
+    </div>
+    <div class="pickList" id="addList"></div>
+    <div class="hint" id="addCount"></div>
+   </div>
+
+   <div id="addManual" style="display:none">
+    <div class="g3">
+     <div><span class="lbl">Name</span><input type="text" id="amName" placeholder="Last, First"></div>
+     <div><span class="lbl">Job title</span><input type="text" id="amTitle" value="TSO"></div>
+     <div><span class="lbl">Sex</span><select id="amSex"><option value="M">M</option><option value="F">F</option></select></div>
+    </div>
+    <div class="g3" style="margin-top:13px">
+     <div><span class="lbl">Quals</span><input type="text" id="amQuals" placeholder="e.g. AKSTVZ"></div>
+     <div><span class="lbl">Start</span><input type="time" id="amStart" step="1800"></div>
+     <div><span class="lbl">End</span><input type="time" id="amEnd" step="1800"></div>
+    </div>
+    <div class="g3" style="margin-top:13px">
+     <div><span class="lbl">Assign to modset</span><select id="amMod"></select></div>
+     <div style="grid-column:span 2"><span class="lbl">Employee ID (optional)</span><input type="text" id="amId" placeholder="KronosID — leave blank to auto-generate"></div>
+    </div>
+    <div class="hint" style="margin-top:12px">Manually added officers are stored with the sheet and survive Re-solve and Save. Blank times default to the full sheet window.</div>
+   </div>
+
+   <div style="margin-top:18px">
+    <span class="lbl">Added to this sheet</span>
+    <div id="addedList" class="hint">None yet.</div>
+   </div>
+  </div>
+  <div class="mf"><button class="btn" data-close>Close</button><button class="btn pri" id="bAddApply"><svg class="ic sm"><use href="#i-plus"/></svg>Add &amp; Re-solve</button></div>
+ </div>
+</div>
+
+<div class="ov" id="ovLoc">
+ <div class="mod wide">
+  <div class="mh"><svg class="ic"><use href="#i-map"/></svg><h3 id="locModTitle">Location</h3><button class="x" data-close><svg class="ic"><use href="#i-x"/></svg></button></div>
+  <div class="mb" id="locModBody"></div>
+  <div class="mf"><button class="btn" data-close>Cancel</button><button class="btn pri" id="bLocSave"><svg class="ic sm"><use href="#i-save"/></svg>Save Location</button></div>
+ </div>
+</div>
+
+<div class="ov" id="ovConfirm">
+ <div class="mod" style="max-width:440px">
+  <div class="mh"><svg class="ic" style="color:var(--warn)"><use href="#i-alert"/></svg><h3 id="cfTitle">Confirm</h3></div>
+  <div class="mb" id="cfBody"></div>
+  <div class="mf"><button class="btn" data-close>Cancel</button><button class="btn pri" id="bCfOk">Confirm</button></div>
+ </div>
+</div>
+
+ 
+
+<div class="toast" id="toast"></div>
+
+
+    </section>
+  </main>
+  <div id="airport-config-modal" class="modal"><div class="modal-content"><span class="modal-close" id="modal-close-btn">&times;</span><div class="modal-header"><h2 class="modal-title">Airport Configuration</h2></div><div class="config-section"><h3 class="config-section-title">Global Airport Settings</h3><div class="grid-2"><label>Airport Start Time <input type="time" id="airport-start-time" step="900"></label><label>Airport End Time <input type="time" id="airport-end-time" step="900"></label></div></div><div class="config-section"><h3 class="config-section-title">Terminals <button class="btn" id="add-terminal-btn">+ Add Terminal</button></h3><div id="terminals-list" class="item-list"></div></div><div id="detail-view" style="display:none;"><div class="modal-tabs" id="detail-tabs"></div><div id="detail-panels"></div></div></div></div>
+  <div id="shift-day-times-modal" class="modal"><div class="modal-content" style="max-width:580px"><span class="modal-close" id="shift-day-times-close">&times;</span><div class="modal-header"><h2 class="modal-title" id="shift-day-times-title">Day times</h2></div><table class="data-table"><thead><tr><th>Day</th><th></th><th>Start</th><th>End</th><th>Duration</th></tr></thead><tbody id="shift-day-times-tbody"></tbody></table><div class="toolbar" style="margin-top:1rem"><button type="button" class="btn" id="btn-sdt-clear">Clear all overrides</button><button type="button" class="btn btn-amber" id="btn-sdt-save">Save</button><button type="button" class="btn" id="btn-sdt-cancel">Cancel</button></div></div></div>
+  <div id="team-detail-modal" class="modal"><div class="modal-content" style="max-width:720px"><span class="modal-close" id="team-detail-close">&times;</span><div class="modal-header"><h2 class="modal-title" id="team-detail-title">Team Details</h2></div><div id="team-detail-content"></div></div></div>
+  <div id="instructions-modal" class="modal"><div class="modal-content"><span class="modal-close" id="instructions-modal-close">&times;</span><div class="modal-header"><h2 class="modal-title">Instructions</h2></div><div id="instructions-content" class="instructions-container" style="max-height:70vh;overflow:auto;white-space:pre-wrap"></div></div></div>
+  <div id="team-follow-docks" class="team-follow-docks" hidden><div id="team-stats-dock" class="team-float-panel team-stats-dock card" data-float="stats"><div class="float-panel-head" data-drag-handle><span class="section-title" style="margin:0">Assignment</span><button type="button" class="btn btn-sm" id="btn-build-close">✕</button></div><div id="team-stats-body" class="team-stats-body"></div></div><div id="team-boards-dock" class="team-float-panel team-boards-dock card" data-float="boards"><div class="float-panel-head" data-drag-handle><span class="section-title" style="margin:0">Teams</span><button type="button" class="btn btn-amber btn-sm" id="btn-team-new-dock">+ New</button></div><div id="team-boards-follow" class="team-boards team-boards-follow"></div></div></div>
+  <footer class="console-footer"><span>SYSTEM STATUS: <b>READY</b></span><span>LINES GENERATED: <b id="console-lines">0</b></span><span>NAV: F1–F7</span></footer>
+  <script src="lib/dayjs.min.js?v=20260902i"></script>
+  <script src="lib/Sortable.min.js?v=20260902i"></script>
+  <script src="lib/luxon.min.js?v=20260902i"></script>
+  <script src="lib/exceljs.min.js?v=20260902i"></script>
+  <script src="js/constants.js?v=20260902i"></script>
+  <script src="js/state.js?v=20260902i"></script>
+  <script src="js/utils.js?v=20260902i"></script>
+  <script src="js/shifts.js?v=20260902i"></script>
+  <script src="js/allocation.js?v=20260902i"></script>
+  <script src="js/functions.js?v=20260902i"></script>
+  <script src="js/render.js?v=20260902i"></script>
+  <script src="js/line-colors.js?v=20260905b"></script>
+  <script src="js/reports.js?v=20260902i"></script>
+  <script src="js/schedule.js?v=20260902i"></script>
+  <script src="js/io.js?v=20260905a"></script>
+  <script src="js/airport.js?v=20260902i"></script>
+  <script src="js/capacity.js?v=20260905b"></script>
+  <script src="js/modset-board.js?v=20260905b"></script>
+  <script src="js/export-board.js?v=20260905c"></script>
+  <script src="js/teams.js?v=20260902i"></script>
+  <script src="js/team-build.js?v=20260902i"></script>
+  <script src="js/instructions.js?v=20260903a"></script>
+  <script src="js/main.js?v=20260904f"></script>
+  <script src="js/console-chrome.js?v=20260904f"></script>
+  <script src="js/airfield-boot.js?v=20260905g"></script>
+  <script src="js/setup-ui.js?v=20260905h"></script>
+  <script src="js/intro.js?v=20260905g"></script>
+  <script src="js/team-form-smart.js?v=20260904m"></script>
+  <script src="js/coverage-cuts.js?v=20260904m"></script>
+  <script src="js/team-flags.js?v=20260904m"></script>
+  <script src="js/team-close.js?v=20260904m"></script>
+
   <script src="js/demo-data.js"></script>
   <script src="js/vendor/xlsx.js"></script>
   <script src="js/rotation-app.js"></script>
   <script src="js/merged-shell.js"></script>
-  <script src="js/blade-lines-adapter.js"></script>
   <script src="js/blade-rotation-bridge.js"></script>
 </body></html>
