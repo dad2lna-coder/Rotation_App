@@ -46,13 +46,16 @@
     s.onload = then || function () {};
     document.body.appendChild(s);
   }
-  // BladeLinesAdapter must be available before F7 bridge consumers and pushLinesToRotation
   loadScript("js/blade-lines-adapter.js", function () {
     loadScript("js/lines-schema.js", function () {
       loadScript("js/f7-placement.js", function () {
         if (S.initPlacement) S.initPlacement();
         loadScript("js/f7-staff-fallback.js", function () {
-          loadScript("js/f7-roster-map.js");
+          loadScript("js/f7-roster-map.js", function () {
+            loadScript("js/blade-interchange.js", function () {
+              loadScript("js/blade-interchange-boot.js");
+            });
+          });
         });
       });
     });
