@@ -6,21 +6,50 @@ const { join } = require("node:path");
 const root = join(__dirname, "..");
 const indexPath = join(root, "index.html");
 const BASE_COMMIT = "9b2e96004c7cc4634c823667d9b8b0af8991b6ff";
+const BASE_URL =
+  "https://raw.githubusercontent.com/dad2lna-coder/Rotation_App/" +
+  BASE_COMMIT +
+  "/index.html";
 
-function restoreBaseIfNeeded(text) {
-  const looksComplete =
+function looksComplete(text) {
+  return (
     text.includes("Operational Movements Discovery Dashboard") &&
     text.includes("function saveToInbox") &&
     text.includes("async function bootShare") &&
-    text.length > 20000;
-  if (looksComplete) {
-    return text;
-  }
-  console.log("index.html is incomplete; restoring dashboard from", BASE_COMMIT);
+    text.length > 20000
+  );
+}
+
+function restoreFromGit() {
   return execSync("git show " + BASE_COMMIT + ":index.html", {
     cwd: root,
     encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
   });
+}
+
+async function restoreFromGitHub() {
+  const res = await fetch(BASE_URL);
+  if (!res.ok) {
+    throw new Error("Unable to download base index.html: HTTP " + res.status);
+  }
+  return await res.text();
+}
+
+async function restoreBaseIfNeeded(text) {
+  if (looksComplete(text)) {
+    return text;
+  }
+  console.log("index.html is incomplete; restoring dashboard from", BASE_COMMIT);
+  try {
+    const fromGit = restoreFromGit();
+    if (looksComplete(fromGit)) {
+      return fromGit;
+    }
+  } catch (error) {
+    console.warn("git show fallback skipped:", error.message || error);
+  }
+  return restoreFromGitHub();
 }
 
 function addButtonTypeAttribute(html) {
@@ -28,29 +57,73 @@ function addButtonTypeAttribute(html) {
     if (/\btype\s*=/.test(attrs)) {
       return full;
     }
-    return "<button type=\"button\"" + attrs + ">";
+    return '<button type="button"' + attrs + ">";
   });
 }
 
 function applyFix(text) {
   let next = text;
 
-  const toolbarOld = "        <button class=\"success\" id=\"refresh-btn\" onclick=\"refreshFromShare()\">Refresh</button>\n        <button id=\"save-btn\" onclick=\"saveToInbox()\">Save</button>\n        <button onclick=\"window.print()\">Print / Save as PDF</button>\n        <button class=\"light\" onclick=\"toggleMoreActions()\">More</button>\n        <button class=\"warning\" onclick=\"resetDashboard()\">Reset local cache</button>";
-  const toolbarNew = "        <button type=\"button\" class=\"success\" id=\"refresh-btn\" data-action=\"refresh\">Refresh</button>\n        <button type=\"button\" id=\"save-btn\" data-action=\"save\">Save</button>\n        <button type=\"button\" data-action=\"print\">Print / Save as PDF</button>\n        <button type=\"button\" class=\"light\" data-action=\"toggle-more\">More</button>\n        <button type=\"button\" class=\"warning\" data-action=\"reset\">Reset local cache</button>";
+  const toolbarOld =
+    '        <button class="success" id="refresh-btn" onclick="refreshFromShare()">Refresh</button>\n' +
+    '        <button id="save-btn" onclick="saveToInbox()">Save</button>\n' +
+    '        <button onclick="window.print()">Print / Save as PDF</button>\n' +
+    '        <button class="light" onclick="toggleMoreActions()">More</button>\n' +
+    '        <button class="warning" onclick="resetDashboard()">Reset local cache</button>';
+  const toolbarNew =
+    '        <button type="button" class="success" id="refresh-btn" data-action="refresh">Refresh</button>\n' +
+    '        <button type="button" id="save-btn" data-action="save">Save</button>\n' +
+    '        <button type="button" data-action="print">Print / Save as PDF</button>\n' +
+    '        <button type="button" class="light" data-action="toggle-more">More</button>\n' +
+    '        <button type="button" class="warning" data-action="reset">Reset local cache</button>';
   if (next.includes(toolbarOld)) {
     next = next.replace(toolbarOld, toolbarNew);
   }
 
   next = addButtonTypeAttribute(next);
 
-  const helpersOld = "    function isTauri() {\n      return Boolean(window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke);\n    }\n\n    function invokeCommand(name, args) {\n      return window.__TAURI__.core.invoke(name, args || {});\n    }";
-  const helpersNew = "    function getTauriInvoke() {\n      const invoke = window.__TAURI__?.core?.invoke;\n      if (typeof invoke !== \"function\") {\n        throw new Error(\"Tauri invoke API is unavailable.\");\n      }\n      return invoke;\n    }\n\n    function isTauri() {\n      return typeof window.__TAURI__?.core?.invoke === \"function\";\n    }\n\n    async function invokeCommand(name, args = {}) {\n      const invoke = getTauriInvoke();\n      try {\n        return await invoke(name, args);\n      } catch (error) {\n        console.error(\"Tauri command failed: \" + name, error);\n        throw error;\n      }\n    }";
+  const helpersOld =
+    "    function isTauri() {\n" +
+    "      return Boolean(window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke);\n" +
+    "    }\n\n" +
+    "    function invokeCommand(name, args) {\n" +
+    "      return window.__TAURI__.core.invoke(name, args || {});\n" +
+    "    }";
+  const helpersNew =
+    "    function getTauriInvoke() {\n" +
+    "      const invoke = window.__TAURI__?.core?.invoke;\n" +
+    "      if (typeof invoke !== \"function\") {\n" +
+    "        throw new Error(\"Tauri invoke API is unavailable.\");\n" +
+    "      }\n" +
+    "      return invoke;\n" +
+    "    }\n\n" +
+    "    function isTauri() {\n" +
+    "      return typeof window.__TAURI__?.core?.invoke === \"function\";\n" +
+    "    }\n\n" +
+    "    async function invokeCommand(name, args = {}) {\n" +
+    "      const invoke = getTauriInvoke();\n" +
+    "      try {\n" +
+    "        return await invoke(name, args);\n" +
+    "      } catch (error) {\n" +
+    "        console.error(\"Tauri command failed: \" + name, error);\n" +
+    "        throw error;\n" +
+    "      }\n" +
+    "    }";
   if (next.includes(helpersOld)) {
     next = next.replace(helpersOld, helpersNew);
   }
 
-  const bootOld = "    async function bootShare() {\n      document.querySelectorAll(\"button\").forEach((btn) => {\n        if (!btn.getAttribute(\"type\")) btn.setAttribute(\"type\", \"button\");\n      });\n      decorateEditableList(\"goals-list\");\n      decorateEditableList(\"objectives-list\");\n      const banner = document.getElementById(\"preview-banner\");\n";
-  const bootNew = "    async function bootShare() {\n      const banner = document.getElementById(\"preview-banner\");\n";
+  const bootOld =
+    "    async function bootShare() {\n" +
+    "      document.querySelectorAll(\"button\").forEach((btn) => {\n" +
+    "        if (!btn.getAttribute(\"type\")) btn.setAttribute(\"type\", \"button\");\n" +
+    "      });\n" +
+    "      decorateEditableList(\"goals-list\");\n" +
+    "      decorateEditableList(\"objectives-list\");\n" +
+    "      const banner = document.getElementById(\"preview-banner\");\n";
+  const bootNew =
+    "    async function bootShare() {\n" +
+    "      const banner = document.getElementById(\"preview-banner\");\n";
   if (next.includes(bootOld)) {
     next = next.replace(bootOld, bootNew);
   }
@@ -138,9 +211,9 @@ function applyFix(text) {
   return next;
 }
 
-function main() {
+async function main() {
   const current = existsSync(indexPath) ? readFileSync(indexPath, "utf8") : "";
-  const base = restoreBaseIfNeeded(current);
+  const base = await restoreBaseIfNeeded(current);
   const fixed = applyFix(base);
   if (!fixed.includes("function initializeUi")) {
     throw new Error("UI init fix was not applied; initializeUi() is missing.");
@@ -152,4 +225,7 @@ function main() {
   console.log("Applied UI initialization fix to index.html");
 }
 
-main();
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
