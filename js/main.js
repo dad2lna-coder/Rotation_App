@@ -31,20 +31,17 @@ window.Scheduler = window.Scheduler || {};
     const instructionsBtn = S.$('btn-instructions');
     const instructionsCloseBtn = S.$('instructions-modal-close');
     const instructionsContent = S.$('instructions-content');
-
     if (instructionsBtn && instructionsModal && instructionsCloseBtn && instructionsContent) {
       function escapeHtml(str) {
         return String(str)
-          .replace(/&/g, "&")
-          .replace(/</g, "<")
-          .replace(/>/g, ">");
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
       }
-
       function renderInstructions(text) {
         instructionsContent.innerHTML = "<pre>" + escapeHtml(text) + "</pre>";
         instructionsModal.style.display = "block";
       }
-
       function showInstructions() {
         if (S.INSTRUCTIONS_MD) {
           renderInstructions(S.INSTRUCTIONS_MD);
@@ -71,14 +68,11 @@ window.Scheduler = window.Scheduler || {};
             instructionsModal.style.display = "block";
           });
       }
-
       const hideInstructions = () => {
         instructionsModal.style.display = 'none';
       };
-
       instructionsBtn.addEventListener('click', showInstructions);
       instructionsCloseBtn.addEventListener('click', hideInstructions);
-
       window.addEventListener('click', (event) => {
         if (event.target === instructionsModal) {
           hideInstructions();
@@ -88,7 +82,6 @@ window.Scheduler = window.Scheduler || {};
 
     if (S.$("btn-generate")) S.$("btn-generate").addEventListener("click", S.generate);
     if (S.$("btn-export")) S.$("btn-export").addEventListener("click", S.exportJson);
-
     if (S.$("btn-import")) {
       S.$("btn-import").addEventListener("click", function () {
         var fileInput = S.$("file-import");
@@ -98,16 +91,13 @@ window.Scheduler = window.Scheduler || {};
         }
       });
     }
-
     if (S.$("file-import")) {
       S.$("file-import").addEventListener("change", function (event) {
         var file = event.target.files && event.target.files[0];
         S.importJsonFile(file);
       });
     }
-
     if (S.$("btn-clear")) S.$("btn-clear").addEventListener("click", S.clearAll);
-
     if (S.$("btn-clear-certs")) {
       S.$("btn-clear-certs").addEventListener("click", function () {
         if (S.clearLineFunctions) S.clearLineFunctions();
@@ -117,13 +107,11 @@ window.Scheduler = window.Scheduler || {};
         if (hint) hint.textContent = "Functions cleared.";
       });
     }
-
     if (S.$("btn-export-lines-excel")) {
       S.$("btn-export-lines-excel").addEventListener("click", function () {
         if (S.exportLinesExcel) S.exportLinesExcel();
       });
     }
-
     if (S.$("btn-add-shift")) {
       S.$("btn-add-shift").addEventListener("click", function () {
         S.readShiftsFromDom();
@@ -145,7 +133,7 @@ window.Scheduler = window.Scheduler || {};
 
     safeInit("airport", S.initAirportConfig);
     safeInit("shifts", S.renderShiftsTable);
-    safeInit("teams", S.initTeams);
+    // safeInit("teams", S.initTeams); // Commented out - initialization is handled cleanly by our module on Teams tab switch
     safeInit("shiftDayTimes", S.initShiftDayTimes);
     safeInit("functionCoverage", S.initFunctionCoverage);
     safeInit("reports", S.initReports);
@@ -162,8 +150,8 @@ window.Scheduler = window.Scheduler || {};
       if (S.renderTeams) S.renderTeams();
       if (S.updateStatus) S.updateStatus("Created " + (t && t.name ? t.name : "team"));
     }
-    S.onNewTeam = onNewTeam;
 
+    S.onNewTeam = onNewTeam;
     ["btn-team-new", "btn-team-new-2"].forEach(function (id) {
       var btn = S.$(id);
       if (btn) btn.addEventListener("click", onNewTeam);

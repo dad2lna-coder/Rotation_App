@@ -98,7 +98,7 @@ window.Scheduler = window.Scheduler || {};
         }
       });
     }
-    return { counts: S.refineBalance(counts, slots, totalPeople, forced), mode: "heuristic" };
+    return { counts: counts, mode: "heuristic" };
   };
 
   function takeFromPools(pools, preferLongFt, placed) {

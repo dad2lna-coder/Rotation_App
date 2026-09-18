@@ -1,4 +1,5 @@
 /* BLADE ops-console skin — overlays styles.css, keeps all existing IDs */
+
 body.console-skin {
   --bg: #05080a;
   --panel: #070b0e;
@@ -63,6 +64,7 @@ body.console-skin .console-mast .brand {
   letter-spacing: 0.08em;
   line-height: 1.25;
 }
+
 body.console-skin .console-mast .brand span {
   display: block;
   color: var(--text);
@@ -153,12 +155,14 @@ body.console-skin select {
 }
 
 body.console-skin .data-table { font-size: 0.78rem; }
+
 body.console-skin .data-table th {
   color: var(--cyan);
   text-transform: uppercase;
   font-weight: 400;
   border-bottom: 1px solid var(--border);
 }
+
 body.console-skin .data-table td {
   border-bottom: 1px solid #3a2a08;
   color: var(--text);
@@ -170,11 +174,13 @@ body.console-skin .cell-rdo {
   opacity: 1;
   text-align: center;
 }
+
 body.console-skin .cell-work {
   background: #145a28;
   color: #d8ffd8;
   text-align: center;
 }
+
 body.console-skin .cell-bag { background: #8a3a12; color: #ffe0c0; }
 body.console-skin .cell-dfo { background: #8a7a12; color: #fff6c0; }
 
@@ -182,6 +188,7 @@ body.console-skin .team-board-head {
   background: #0c1216;
   border-bottom: 1px solid var(--border);
 }
+
 body.console-skin .team-name-input {
   background: transparent;
   border: none;
@@ -205,12 +212,45 @@ body.console-skin .console-footer {
   text-transform: uppercase;
   color: var(--text);
 }
-body.console-skin .console-footer b { font-weight: 400; color: var(--green); }
 
+body.console-skin .console-footer b { font-weight: 400; color: var(--green); }
 body.console-skin .alert-ok { background: #062010; border-color: var(--green); color: var(--green); }
 body.console-skin .alert-warn { background: #201800; border-color: var(--border); color: var(--amber); }
 
 @media (max-width: 900px) {
   body.console-skin .console-mast { gap: 0.25rem 0.9rem; font-size: 0.68rem; }
   body.console-skin main { padding-bottom: 4.5rem; }
+}
+
+/* ================================================================= */
+/* == FINAL MODAL FIX (BRUTE-FORCE OVERRIDE)                      == */
+/* ================================================================= */
+/*
+ * This uses `!important` to guarantee that these rules take absolute
+ * priority over any other conflicting styles from other files.
+*/
+
+/* 1. Force the outer modal wrapper to have no max-width. */
+body.console-skin .modal {
+  max-width: none !important;
+}
+
+/* 2. Force the inner modal content to be resizable. */
+body.console-skin .modal-content {
+  /* Remove any size constraints */
+  width: 600px !important;    /* Set an initial width */
+  max-width: none !important; /* CRITICAL: This is the main fix. */
+
+  /* Enable the resize handle */
+  overflow: auto !important;
+  resize: both !important;
+
+  /* Set safety limits */
+  min-width: 320px !important;
+  min-height: 250px !important;
+}
+
+/* 3. (Optional) Give the team details modal a larger default width. */
+body.console-skin #team-detail-modal .modal-content {
+  width: 800px !important;
 }
