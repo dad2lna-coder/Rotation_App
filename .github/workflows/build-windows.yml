@@ -36,9 +36,6 @@ jobs:
       - name: Decode app icons
         run: node scripts/decode-icons.js
 
-      - name: Prepare frontend dist
-        run: node scripts/prepare-frontend.js
-
       - name: Install frontend deps
         run: npm install
 
