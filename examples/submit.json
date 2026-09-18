@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "updatedAt": "2026-09-18T16:00:00Z",
+  "updatedBy": "JMoore",
+  "items": [
+    {
+      "movement": "ndo",
+      "idea": "Route NDO notices through a shared mailbox",
+      "contributor": "Scheduling",
+      "feedback": 2
+    }
+  ],
+  "sharedNotes": "Example submit only. Power Automate should merge this into data/dashboard.json, then move the file to archive/.",
+  "meta": {
+    "app": "Operational Movements Discovery Dashboard"
+  },
+  "schema": "operational-movements-dashboard",
+  "schemaVersion": "2.0.0",
+  "exportedAt": "2026-09-18T16:00:00Z",
+  "exportedBy": "JMoore",
+  "source": "OperationalMovements.exe",
+  "intendedFolderDisplayName": "OneDrive - USTSA\\FACTTT",
+  "goals": [
+    "Give every impacted team visibility when someone leaves the operation."
+  ],
+  "objectives": [
+    "Replace manual email forwards with a reliable notification path."
+  ],
+  "movements": {
+    "ndo": {
+      "label": "NDO Movement",
+      "flow": {
+        "currentRecipients": ["Scheduling"],
+        "teamsNotification": ["Payroll", "Coordination Center"],
+        "personnel": "Officer on NDO",
+        "notificationNeed": "Who is gone, where, and return date",
+        "movementPath": "Email forward today; Automate later",
+        "status": "Discovery Needed"
+      },
+      "ideas": [
+        {
+          "id": "ndoIdeas-1",
+          "idea": "Route NDO notices through a shared mailbox",
+          "contributor": "Scheduling",
+          "prosAndConcerns": "Simple start; mailbox ownership TBD",
+          "feedback": 2,
+          "deleted": false
+        }
+      ],
+      "actions": [
+        {
+          "id": "ndo-task-list-task-1",
+          "text": "Confirm upstream sender for NDO",
+          "complete": false
+        }
+      ],
+      "questions": [
+        "Who owns the distribution list?"
+      ]
+    },
+    "training": {
+      "label": "Training Movement",
+      "flow": null,
+      "ideas": [],
+      "actions": [],
+      "questions": []
+    },
+    "tsst": {
+      "label": "TSST-Travel",
+      "flow": null,
+      "ideas": [],
+      "actions": [],
+      "questions": []
+    }
+  }
+}

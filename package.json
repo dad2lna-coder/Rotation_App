@@ -1,0 +1,15 @@
+{
+  "name": "operational-movements",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Operational Movements Discovery Dashboard — portable Windows Tauri app for OneDrive FACTTT",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "build:nsis": "tauri build --bundles nsis"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "updatedAt": null,
+  "updatedBy": null,
+  "items": [],
+  "sharedNotes": "",
+  "meta": {
+    "app": "Operational Movements Discovery Dashboard"
+  },
+  "schema": "operational-movements-dashboard",
+  "schemaVersion": "2.0.0",
+  "exportedAt": null,
+  "exportedBy": null,
+  "source": "OperationalMovements",
+  "intendedFolderDisplayName": "OneDrive - USTSA\\FACTTT",
+  "goals": [],
+  "objectives": [],
+  "movements": {
+    "ndo": {
+      "label": "NDO Movement",
+      "flow": null,
+      "ideas": [],
+      "actions": [],
+      "questions": []
+    },
+    "training": {
+      "label": "Training Movement",
+      "flow": null,
+      "ideas": [],
+      "actions": [],
+      "questions": []
+    },
+    "tsst": {
+      "label": "TSST-Travel",
+      "flow": null,
+      "ideas": [],
+      "actions": [],
+      "questions": []
+    }
+  }
+}

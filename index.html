@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -518,6 +518,48 @@
       width: 100%;
       min-height: 150px;
     }
+
+    .hello-line {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #bfdbfe;
+      letter-spacing: 0.02em;
+    }
+    .share-status {
+      margin-top: 10px;
+      font-size: 0.88rem;
+      color: #cbd5e1;
+    }
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 40;
+      max-width: min(520px, calc(100vw - 32px));
+      background: #0f172a;
+      color: #f8fafc;
+      border-radius: 12px;
+      padding: 12px 16px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.28);
+      font-size: 0.92rem;
+      line-height: 1.4;
+      display: none;
+    }
+    .toast.show { display: block; }
+    .toast.ok { border-left: 4px solid #14b8a6; }
+    .toast.err { border-left: 4px solid #f87171; }
+    .more-actions { margin-top: 10px; }
+    .preview-banner {
+      margin-top: 10px;
+      font-size: 0.88rem;
+      color: #e2e8f0;
+      background: rgba(15, 23, 42, 0.25);
+      border: 1px solid rgba(191, 219, 254, 0.25);
+      border-radius: 10px;
+      padding: 8px 12px;
+    }
+
     .footer-note {
       color: var(--muted);
       font-size: 0.9rem;
@@ -578,34 +620,39 @@
 </head>
 <body>
   <header>
-    <h1>🧭 Operational Movements Discovery Dashboard</h1>
+    <p id="hello-line" class="hello-line">Hello</p>
+    <h1>Operational Movements Discovery Dashboard</h1>
     <p>
       A collaborative workspace to map notification flows, reduce communication gaps,
       and improve operational visibility when team members move out of the operation.
+    </p>
+    <p class="share-status">Shared folder: <code id="share-path-code">OneDrive - USTSA\FACTTT</code></p>
+    <p id="preview-banner" class="preview-banner" hidden>
+      Browser preview — Refresh / Save use a local demo store. The Windows exe writes to OneDrive FACTTT.
     </p>
   </header>
   <main class="container">
     <section class="top-actions">
       <div class="button-row">
+        <button class="success" id="refresh-btn" onclick="refreshFromShare()">Refresh</button>
+        <button id="save-btn" onclick="saveToInbox()">Save</button>
         <button onclick="window.print()">Print / Save as PDF</button>
-        <button class="secondary" onclick="exportJsonPayload()">Export JSON Payload</button>
-        <button class="success" onclick="importJsonPayload()">Import JSON Payload</button>
-        <button class="light" onclick="showOneDriveInstructions()">Where Do I Save JSON?</button>
-        <button class="warning" onclick="resetDashboard()">Reset Local Changes</button>
+        <button class="light" onclick="toggleMoreActions()">More</button>
+        <button class="warning" onclick="resetDashboard()">Reset local cache</button>
+      </div>
+      <div id="more-actions" class="button-row more-actions" hidden>
+        <button class="secondary" onclick="importJsonPayload()">Import file…</button>
       </div>
       <div class="folder-note">
-        <strong>JSON Payload Location:</strong>
+        <strong>Source of truth:</strong> <code>data/dashboard.json</code> in the FACTTT share.
         <br />
-        Save exported JSON files to your synced OneDrive folder:
-        <br />
-        <code>OneDrive - USTSA\\FACTTT</code>
+        <strong>Refresh</strong> loads that file. <strong>Save</strong> writes
+        <code>inbox/submit-<timestamp>-<operator>.json</code>
+        for Power Automate to merge. The app never writes a file named master.
         <br /><br />
-        The full path may be different for each user. For example:
+        Path for this PC:
         <br />
-        <code>C:\\Users\\Your.User.Name\\OneDrive - USTSA\\FACTTT</code>
-        <br /><br />
-        This standalone page cannot automatically write files into OneDrive. After exporting,
-        move or save the downloaded JSON file into the shared FACTTT folder.
+        <code id="folder-path-code">C:\\Users\\Your.User.Name\\OneDrive - USTSA\\FACTTT</code>
       </div>
     </section>
 
@@ -1207,18 +1254,18 @@
       <h2>📝 Shared Notes</h2>
       <p class="small-muted">
         Use this section during working sessions to capture decisions, open questions, or follow-up items.
-        Notes are included in exported JSON payloads.
+        Notes are included when you Save to inbox.
       </p>
       <textarea id="sharedNotes" class="notes-area" placeholder="Enter shared notes here..."></textarea>
       <div class="instruction-box">
-        <h3>Recommended Test Workflow</h3>
+        <h3>Daily workflow</h3>
         <ol>
-          <li>Open this dashboard in a browser.</li>
-          <li>Add or update ideas, feedback, action items, and notes.</li>
-          <li>Select <strong>Export JSON Payload</strong>.</li>
-          <li>Move or save the downloaded JSON file to <strong>OneDrive - USTSA\\FACTTT</strong>.</li>
-          <li>Another user can open the dashboard and select <strong>Import JSON Payload</strong>.</li>
-          <li>Use <strong>MERGE</strong> to combine ideas or <strong>REPLACE</strong> to load a complete saved state.</li>
+          <li>Open OperationalMovements.exe from <strong>OneDrive - USTSA\\FACTTT</strong>.</li>
+          <li>The app greets you and Refresh-loads <code>data/dashboard.json</code>.</li>
+          <li>Edit ideas, actions, questions, and notes.</li>
+          <li>Select <strong>Save</strong>. A submit file is written to <code>inbox/</code>.</li>
+          <li>Power Automate merges that file into <code>data/dashboard.json</code>, posts Teams, and moves it to <code>archive/</code>.</li>
+          <li>Select <strong>Refresh</strong> later to pick up merges from other operators.</li>
         </ol>
       </div>
     </section>
@@ -1236,22 +1283,55 @@
     </section>
 
     <div class="footer-note">
-      Operational Movements Discovery Dashboard. Local edits are stored in this browser until exported, imported, or reset.
+      Operational Movements Discovery Dashboard. Shared source of truth is data/dashboard.json in FACTTT.
     </div>
   </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script>
     const STORAGE_KEY = "operational_movements_dashboard_facttt_v2";
+    const DEMO_DASHBOARD_KEY = "omd_preview_dashboard_json";
     const JSON_FOLDER_DISPLAY_NAME = "OneDrive - USTSA\\FACTTT";
+    const APP_TITLE = "Operational Movements Discovery Dashboard";
 
-    function showOneDriveInstructions() {
-      alert(
-        "Save exported JSON files to your synced OneDrive folder:\n\n" +
-        JSON_FOLDER_DISPLAY_NAME + "\n\n" +
-        "The full path is different for each user. Example:\n\n" +
-        "C:\\Users\\Your.User.Name\\OneDrive - USTSA\\FACTTT\n\n" +
-        "After exporting, move the downloaded JSON file into the FACTTT folder."
-      );
+    let currentOperator = "";
+    let sharePath = "";
+    let toastTimer = null;
+
+    function isTauri() {
+      return Boolean(window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke);
+    }
+
+    function invokeCommand(name, args) {
+      return window.__TAURI__.core.invoke(name, args || {});
+    }
+
+    function showToast(message, kind) {
+      const el = document.getElementById("toast");
+      if (!el) {
+        alert(message);
+        return;
+      }
+      el.textContent = message;
+      el.className = "toast show " + (kind === "err" ? "err" : "ok");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        el.classList.remove("show");
+      }, 5200);
+    }
+
+    function toggleMoreActions() {
+      const row = document.getElementById("more-actions");
+      if (!row) return;
+      row.hidden = !row.hidden;
+    }
+
+    function cachePayload() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(buildPayload(false)));
+      } catch (error) {
+        console.error("Optional cache skipped.", error);
+      }
     }
 
     function showTab(tabId) {
@@ -1294,7 +1374,7 @@
       if (value < 0) value = 0;
       numberSpan.textContent = value;
       updateMetrics();
-      savePayloadToLocalStorage(false);
+      cachePayload();
     }
 
     function addIdea(tableId, ideaInputId, howInputId, prosInputId) {
@@ -1319,7 +1399,7 @@
       howInput.value = "";
       prosInput.value = "";
       updateMetrics();
-      savePayloadToLocalStorage(false);
+      cachePayload();
     }
 
     function deleteIdea(button) {
@@ -1328,7 +1408,7 @@
         row.setAttribute('data-deleted', 'true');
         row.style.display = 'none';
         updateMetrics();
-        savePayloadToLocalStorage(false);
+        cachePayload();
       }
     }
 
@@ -1350,7 +1430,7 @@
       taskList.appendChild(li);
       input.value = '';
       updateProgress();
-      savePayloadToLocalStorage(false);
+      cachePayload();
     }
 
     function deleteAction(button) {
@@ -1358,7 +1438,7 @@
       if (li) {
         li.remove();
         updateProgress();
-        savePayloadToLocalStorage(false);
+        cachePayload();
       }
     }
 
@@ -1378,14 +1458,14 @@
       `;
       list.appendChild(li);
       input.value = '';
-      savePayloadToLocalStorage(false);
+      cachePayload();
     }
 
     function deleteItem(button) {
       const li = button.closest('li');
       if (li) {
         li.remove();
-        savePayloadToLocalStorage(false);
+        cachePayload();
       }
     }
 
@@ -1405,7 +1485,7 @@
         : Math.round((checked.length / checkboxes.length) * 100);
       document.getElementById("progressValue").textContent = percent + "%";
       document.getElementById("progressBar").style.width = percent + "%";
-      savePayloadToLocalStorage(false);
+      cachePayload();
     }
 
     function updateMetrics() {
@@ -1416,29 +1496,40 @@
       updateProgress();
     }
 
-    function getExporterName() {
-      let name = localStorage.getItem("operational_movements_exported_by");
-      if (!name) {
-        name = prompt("Enter your name or team for the export file:", "");
-        if (name) {
-          localStorage.setItem("operational_movements_exported_by", name);
-        }
-      }
-      return name || "Unknown";
+    function operatorName() {
+      if (currentOperator) return currentOperator;
+      return localStorage.getItem("operational_movements_exported_by") || "Unknown";
+    }
+
+    function flattenItems(payload) {
+      const items = [];
+      const movements = payload.movements || {};
+      ["ndo", "training", "tsst"].forEach((key) => {
+        const ideas = (movements[key] && movements[key].ideas) || [];
+        ideas.forEach((idea) => {
+          if (idea && !idea.deleted && idea.idea) {
+            items.push({
+              movement: key,
+              idea: idea.idea,
+              contributor: idea.contributor || "",
+              feedback: Number(idea.feedback || 0)
+            });
+          }
+        });
+      });
+      return items;
     }
 
     function buildPayload(includePrompt) {
-      const exportedBy = includePrompt
-        ? getExporterName()
-        : localStorage.getItem("operational_movements_exported_by") || "Unknown";
+      const exportedBy = operatorName();
       return {
         schema: "operational-movements-dashboard",
         schemaVersion: "2.0.0",
         exportedAt: new Date().toISOString(),
         exportedBy: exportedBy,
-        source: "Standalone HTML Dashboard",
+        source: isTauri() ? "OperationalMovements.exe" : "Browser preview",
         intendedFolderDisplayName: JSON_FOLDER_DISPLAY_NAME,
-        userPathNote: "The local OneDrive path changes by user. Example: C:\\Users\\Your.User.Name\\OneDrive - USTSA\\FACTTT",
+        userPathNote: sharePath || "C:\\Users\\Your.User.Name\\OneDrive - USTSA\\FACTTT",
         goals: collectListItems("goals-list"),
         objectives: collectListItems("objectives-list"),
         movements: {
@@ -1465,6 +1556,23 @@
           }
         },
         sharedNotes: document.getElementById("sharedNotes")?.value || ""
+      };
+    }
+
+    function buildSharePayload() {
+      const base = buildPayload(false);
+      const operator = operatorName();
+      const now = new Date().toISOString();
+      return {
+        version: 1,
+        updatedAt: now,
+        updatedBy: operator,
+        items: flattenItems(base),
+        sharedNotes: base.sharedNotes,
+        meta: { app: APP_TITLE },
+        ...base,
+        exportedAt: now,
+        exportedBy: operator
       };
     }
 
@@ -1586,31 +1694,84 @@
       });
     }
 
-    function exportJsonPayload() {
-      const payload = buildPayload(true);
-      const json = JSON.stringify(payload, null, 2);
-      const exportedBySafe = String(payload.exportedBy || "Unknown")
-        .replace(/[^a-z0-9\-_]/gi, "_")
-        .substring(0, 40);
-      const date = new Date().toISOString().slice(0, 10);
-      const filename = `${date}_${exportedBySafe}_operational_movements_dashboard.json`;
-      const blob = new Blob([json], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      alert(
-        "JSON payload exported.\n\n" +
-        "Next step:\n" +
-        "Move or save the downloaded JSON file to your synced OneDrive folder:\n\n" +
-        "OneDrive - USTSA\\FACTTT\n\n" +
-        "Your full path may look like:\n" +
-        "C:\\Users\\Your.User.Name\\OneDrive - USTSA\\FACTTT"
+    function isDashboardPopulated(payload) {
+      if (!payload || !payload.movements) return false;
+      const m = payload.movements;
+      const hasMovementContent = (block) => {
+        if (!block) return false;
+        const ideas = Array.isArray(block.ideas) ? block.ideas.filter((i) => i && i.idea) : [];
+        const actions = Array.isArray(block.actions) ? block.actions : [];
+        const questions = Array.isArray(block.questions) ? block.questions : [];
+        return ideas.length > 0 || actions.length > 0 || questions.length > 0 || Boolean(block.flow);
+      };
+      return (
+        (Array.isArray(payload.goals) && payload.goals.length > 0) ||
+        (Array.isArray(payload.objectives) && payload.objectives.length > 0) ||
+        (typeof payload.sharedNotes === "string" && payload.sharedNotes.trim().length > 0) ||
+        hasMovementContent(m.ndo) ||
+        hasMovementContent(m.training) ||
+        hasMovementContent(m.tsst)
       );
+    }
+
+    function applyDashboardJson(payload) {
+      if (!isValidPayload(payload)) {
+        throw new Error("dashboard.json is missing the operational-movements schema.");
+      }
+      if (!isDashboardPopulated(payload)) {
+        return false;
+      }
+      applyPayloadReplace(payload);
+      updateMetrics();
+      cachePayload();
+      return true;
+    }
+
+    async function refreshFromShare() {
+      try {
+        let payload;
+        if (isTauri()) {
+          payload = await invokeCommand("read_dashboard");
+        } else {
+          const raw = localStorage.getItem(DEMO_DASHBOARD_KEY);
+          payload = raw ? JSON.parse(raw) : null;
+          if (!payload) {
+            showToast("No shared dashboard yet — showing built-in starter content.", "ok");
+            updateMetrics();
+            return;
+          }
+        }
+        const applied = applyDashboardJson(payload);
+        if (applied) {
+          showToast("Refreshed from data/dashboard.json", "ok");
+        } else {
+          showToast("dashboard.json is empty. Keeping the starter content on this page.", "ok");
+          updateMetrics();
+        }
+      } catch (error) {
+        console.error(error);
+        showToast("Refresh failed: " + (error.message || error), "err");
+      }
+    }
+
+    async function saveToInbox() {
+      const payload = buildSharePayload();
+      try {
+        if (isTauri()) {
+          const written = await invokeCommand("write_submit", { payload });
+          showToast("Saved to " + written, "ok");
+        } else {
+          localStorage.setItem(DEMO_DASHBOARD_KEY, JSON.stringify(payload, null, 2));
+          const ts = new Date().toISOString().replace(/[:.]/g, "-");
+          const safe = String(payload.updatedBy || "OPERATOR").replace(/[^a-z0-9\-_]/gi, "_").substring(0, 40);
+          const fake = "C:\\Users\\Preview\\OneDrive - USTSA\\FACTTT\\inbox\\submit-" + ts + "-" + safe + ".json";
+          showToast("Saved (preview) to " + fake, "ok");
+        }
+        cachePayload();
+      } catch (error) {
+        console.error(error);
+        showToast("Save failed: " + (error.message || error), "err");
+      }
     }
 
     function importJsonPayload() {
@@ -1642,7 +1803,7 @@
               alert("Import canceled. Please enter REPLACE or MERGE.");
               return;
             }
-            savePayloadToLocalStorage(false);
+            cachePayload();
             updateMetrics();
             alert(
               "Import complete.\n\n" +
@@ -1660,14 +1821,24 @@
     }
 
     function isValidPayload(payload) {
-      return (
-        payload &&
-        payload.schema === "operational-movements-dashboard" &&
+      if (!payload || typeof payload !== "object") return false;
+      if (
         payload.movements &&
         payload.movements.ndo &&
         payload.movements.training &&
         payload.movements.tsst
-      );
+      ) {
+        return true;
+      }
+      if (payload.schema === "operational-movements-dashboard") return true;
+      if (
+        Number(payload.version) === 1 &&
+        payload.meta &&
+        typeof payload.meta.app === "string"
+      ) {
+        return true;
+      }
+      return false;
     }
 
     function applyPayloadReplace(payload) {
@@ -1793,38 +1964,64 @@
       notesBox.value = `${notesBox.value || ""}${divider}${notes}`;
     }
 
-    function savePayloadToLocalStorage(includePrompt) {
-      try {
-        const payload = buildPayload(Boolean(includePrompt));
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-      } catch (error) {
-        console.error("Unable to save dashboard locally.", error);
-      }
-    }
-
-    function loadPayloadFromLocalStorage() {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) {
-        updateMetrics();
-        return;
-      }
-      try {
-        const payload = JSON.parse(saved);
-        if (isValidPayload(payload)) {
-          applyPayloadReplace(payload);
-        }
-        updateMetrics();
-      } catch (error) {
-        console.error("Unable to load saved dashboard payload.", error);
-        updateMetrics();
-      }
-    }
-
     function resetDashboard() {
-      const confirmed = confirm("This will clear locally saved dashboard data in this browser and reload the page. Continue?");
+      const confirmed = confirm("Clear the optional local cache on this computer and reload? The shared data/dashboard.json is not deleted.");
       if (!confirmed) return;
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(DEMO_DASHBOARD_KEY);
       location.reload();
+    }
+
+    function setHello(name) {
+      const el = document.getElementById("hello-line");
+      if (!el) return;
+      el.textContent = name ? ("Hello, " + name) : "Hello";
+    }
+
+    function setSharePathDisplay(path) {
+      sharePath = path || JSON_FOLDER_DISPLAY_NAME;
+      const a = document.getElementById("share-path-code");
+      const b = document.getElementById("folder-path-code");
+      if (a) a.textContent = sharePath;
+      if (b) b.textContent = sharePath;
+    }
+
+    async function bootShare() {
+      const banner = document.getElementById("preview-banner");
+      if (isTauri()) {
+        if (banner) banner.hidden = true;
+        try {
+          currentOperator = await invokeCommand("get_operator");
+          setHello(currentOperator);
+          try {
+            localStorage.setItem("operational_movements_exported_by", currentOperator);
+          } catch (_err) { /* ignore */ }
+          await invokeCommand("ensure_share_layout");
+          const root = await invokeCommand("shared_folder_path");
+          setSharePathDisplay(root);
+          await refreshFromShare();
+        } catch (error) {
+          console.error(error);
+          setHello(currentOperator || "");
+          showToast("Could not open FACTTT: " + (error.message || error), "err");
+          updateMetrics();
+        }
+      } else {
+        if (banner) banner.hidden = false;
+        setHello("");
+        setSharePathDisplay(JSON_FOLDER_DISPLAY_NAME);
+        const raw = localStorage.getItem(DEMO_DASHBOARD_KEY);
+        if (raw) {
+          try {
+            applyDashboardJson(JSON.parse(raw));
+          } catch (error) {
+            console.error(error);
+            updateMetrics();
+          }
+        } else {
+          updateMetrics();
+        }
+      }
     }
 
     function normalizeText(value) {
@@ -1852,7 +2049,7 @@
         event.target.matches("#sharedNotes")
       ) {
         updateMetrics();
-        savePayloadToLocalStorage(false);
+        cachePayload();
       }
     });
 
@@ -1862,7 +2059,7 @@
       }
     });
 
-    window.addEventListener("load", loadPayloadFromLocalStorage);
+    window.addEventListener("load", bootShare);
   </script>
 </body>
 </html>
