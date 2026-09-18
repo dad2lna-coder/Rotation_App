@@ -1,148 +1,2332 @@
 <!DOCTYPE html>
-<html lang="en" class="console">
+<html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>BLADE Alpha Build</title>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-<link rel="stylesheet" href="css/styles.css?v=20260911a" />
-<link rel="stylesheet" href="css/line-print.css?v=20260902i" />
-<link rel="stylesheet" href="css/intro.css?v=20260904b" />
-<link rel="stylesheet" href="css/console.css?v=20260904c" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Operational Movements Discovery Dashboard</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --panel-soft: #f8fafc;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #1d4ed8;
+      --primary-dark: #1e3a8a;
+      --primary-soft: #dbeafe;
+      --accent: #0f766e;
+      --accent-soft: #ccfbf1;
+      --warning: #b45309;
+      --warning-soft: #fef3c7;
+      --danger: #b91c1c;
+      --danger-soft: #fee2e2;
+      --border: #d1d5db;
+      --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --radius: 16px;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      background: linear-gradient(135deg, #0f172a, #1d4ed8);
+      color: white;
+      padding: 32px 24px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+      letter-spacing: 0.3px;
+    }
+    header p {
+      margin: 10px 0 0;
+      max-width: 1150px;
+      color: #e5e7eb;
+      font-size: 1rem;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .top-actions {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    button,
+    .tab-button,
+    .link-button {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-weight: 700;
+      background: var(--primary);
+      color: white;
+      transition: 0.15s ease;
+      text-decoration: none;
+      display: inline-block;
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
+    button:hover,
+    .tab-button:hover,
+    .link-button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+    button.secondary {
+      background: #475569;
+    }
+    button.success {
+      background: var(--accent);
+    }
+    button.warning {
+      background: var(--warning);
+    }
+    button.danger {
+      background: var(--danger);
+    }
+    button.light,
+    .link-button.light {
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+    }
+    .folder-note {
+      margin-top: 12px;
+      font-size: 0.92rem;
+      color: #475569;
+      background: var(--panel-soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .folder-note code {
+      display: inline-block;
+      background: #e5e7eb;
+      color: #111827;
+      border-radius: 8px;
+      padding: 3px 7px;
+      margin-top: 4px;
+      font-family: Consolas, "Courier New", monospace;
+    }
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .metric-card {
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+    .metric-card h3 {
+      margin: 0;
+      font-size: 0.88rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+    .metric-card .value {
+      margin-top: 10px;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .metric-card .sub {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+    .section {
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      margin-bottom: 22px;
+    }
+    .section h2 {
+      margin: 0 0 14px;
+      font-size: 1.35rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .section h3 {
+      margin-top: 22px;
+      margin-bottom: 10px;
+    }
+    .problem-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .problem-card {
+      background: var(--panel-soft);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .problem-card strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--primary);
+    }
+    .two-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .tab-button {
+      background: #e5e7eb;
+      color: #111827;
+    }
+    .tab-button.active {
+      background: var(--primary);
+      color: white;
+    }
+    .movement-panel {
+      display: none;
+    }
+    .movement-panel.active {
+      display: block;
+    }
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .flow-item {
+      background: var(--panel-soft);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+    .flow-item strong {
+      color: var(--primary);
+      display: block;
+      margin-bottom: 6px;
+    }
+    .editable-content {
+      border: 1px dashed transparent;
+      border-radius: 6px;
+      padding: 4px 6px;
+      outline: none;
+      transition: background 0.15s ease, border-color 0.15s ease;
+      min-height: 28px;
+    }
+    .editable-content:hover {
+      border-color: #cbd5e1;
+      background: rgba(255, 255, 255, 0.7);
+    }
+    .editable-content:focus {
+      background: #eff6ff !important;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.15);
+    }
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+      align-items: center;
+    }
+    .tag {
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      border-radius: 999px;
+      padding: 5px 12px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border: 1px solid transparent;
+      outline: none;
+      display: inline-block;
+      cursor: text;
+    }
+    .tag:hover {
+      border-color: var(--primary);
+    }
+    .tag:focus {
+      background: #ffffff;
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+    .tag.warning {
+      background: var(--warning-soft);
+      color: var(--warning);
+    }
+    .tag.success {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .status-pill {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      background: var(--warning-soft);
+      color: var(--warning);
+      outline: none;
+      border: 1px solid transparent;
+      cursor: text;
+      width: fit-content;
+    }
+    .status-pill:hover {
+      border-color: var(--warning);
+    }
+    .status-pill:focus {
+      background: #ffffff;
+      box-shadow: 0 0 0 2px var(--warning);
+    }
+    .status-pill.good {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .status-pill.risk {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+    th,
+    td {
+      border: 1px solid var(--border);
+      padding: 10px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: #e2e8f0;
+      color: #111827;
+      font-weight: 800;
+    }
+    td[contenteditable="true"], span[contenteditable="true"], li[contenteditable="true"],
+    .editable-content, strong[contenteditable="true"], .status-pill[contenteditable="true"],
+    .tag[contenteditable="true"] {
+      outline: none;
+      cursor: text;
+      transition: background 0.15s ease, box-shadow 0.15s ease;
+    }
+    td[contenteditable="true"]:hover, span[contenteditable="true"]:hover, li[contenteditable="true"]:hover,
+    .editable-content:hover, strong[contenteditable="true"]:hover {
+      background: rgba(29, 78, 216, 0.04);
+    }
+    td[contenteditable="true"]:focus, span[contenteditable="true"]:focus, li[contenteditable="true"]:focus,
+    .editable-content:focus, strong[contenteditable="true"]:focus {
+      background: #eff6ff !important;
+      box-shadow: inset 0 0 0 2px var(--primary);
+    }
+    .editable-bullet-list {
+      margin: 10px 0 0;
+      padding-left: 24px;
+    }
+    .editable-bullet-list li {
+      margin-bottom: 8px;
+      padding: 3px 6px;
+      border-radius: 6px;
+      cursor: text;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .editable-bullet-list li span[contenteditable="true"] {
+      flex: 1;
+    }
+    .add-list-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      align-items: center;
+    }
+    .add-list-form input {
+      flex: 1;
+      min-width: 180px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
+    .edit-hint {
+      margin: 12px 0 0;
+      padding: 10px 12px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      color: #1e3a8a;
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+    .feedback-cell {
+      text-align: center;
+      min-width: 130px;
+    }
+    .feedback-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+    .feedback-controls button {
+      padding: 5px 9px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+    .feedback-number {
+      font-weight: 800;
+      color: var(--primary);
+      min-width: 24px;
+      display: inline-block;
+    }
 
+    /* Lists: Discussion Questions & Action Items */
+    .question-list,
+    .task-list {
+      margin: 12px 0 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .question-list li,
+    .task-list li {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--panel-soft);
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      width: 100%;
+    }
+
+    /* Action item checkbox strictly locked to small far-left */
+    .task-list input[type="checkbox"] {
+      width: 18px !important;
+      min-width: 18px !important;
+      max-width: 18px !important;
+      height: 18px !important;
+      min-height: 18px !important;
+      max-height: 18px !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      flex: 0 0 18px !important;
+      cursor: pointer;
+      accent-color: var(--primary);
+      transform: none !important;
+    }
+
+    /* Action item text & Question text: takes all space to the left */
+    .task-list li span,
+    .question-list li span {
+      flex: 1 1 auto;
+      min-width: 0;
+      text-align: left;
+      font-size: 0.98rem;
+      line-height: 1.45;
+      color: var(--text);
+      border-radius: 6px;
+      padding: 4px 6px;
+      outline: none;
+      word-break: break-word;
+    }
+    .task-complete span {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    /* Delete buttons for list items */
+    .item-delete-btn {
+      flex: 0 0 auto;
+      margin-left: auto;
+      background: var(--danger-soft);
+      color: var(--danger);
+      border: none;
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      cursor: pointer;
+      line-height: 1;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .item-delete-btn:hover {
+      background: var(--danger);
+      color: white;
+      transform: scale(1.05);
+    }
+
+    .progress-wrap {
+      background: #e5e7eb;
+      border-radius: 999px;
+      height: 14px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--primary));
+      width: 0%;
+      transition: width 0.2s ease;
+    }
+    .add-form {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr 1.5fr auto;
+      gap: 10px;
+      margin-top: 14px;
+      align-items: end;
+    }
+    .add-task-form,
+    .add-question-form {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin-top: 14px;
+      align-items: end;
+    }
+    label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 4px;
+    }
+    /* Specific text inputs to avoid stretching checkboxes */
+    input[type="text"],
+    .add-form input,
+    .add-task-form input,
+    .add-question-form input,
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      background: white;
+    }
+    textarea {
+      min-height: 76px;
+      resize: vertical;
+    }
+    .notes-area {
+      width: 100%;
+      min-height: 150px;
+    }
+
+    .hello-line {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #bfdbfe;
+      letter-spacing: 0.02em;
+    }
+    .share-status {
+      margin-top: 10px;
+      font-size: 0.88rem;
+      color: #cbd5e1;
+    }
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 40;
+      max-width: min(520px, calc(100vw - 32px));
+      background: #0f172a;
+      color: #f8fafc;
+      border-radius: 12px;
+      padding: 12px 16px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.28);
+      font-size: 0.92rem;
+      line-height: 1.4;
+      display: none;
+    }
+    .toast.show { display: block; }
+    .toast.ok { border-left: 4px solid #14b8a6; }
+    .toast.err { border-left: 4px solid #f87171; }
+    .more-actions { margin-top: 10px; }
+    .preview-banner {
+      margin-top: 10px;
+      font-size: 0.88rem;
+      color: #e2e8f0;
+      background: rgba(15, 23, 42, 0.25);
+      border: 1px solid rgba(191, 219, 254, 0.25);
+      border-radius: 10px;
+      padding: 8px 12px;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-align: center;
+      padding: 20px;
+    }
+    .small-muted {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .instruction-box {
+      background: #eef6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 12px;
+    }
+    .instruction-box h3 {
+      margin-top: 0;
+    }
+    .collapsible-content.collapsed {
+      display: none;
+    }
+    @media print {
+      button,
+      .add-form,
+      .add-task-form,
+      .add-question-form,
+      .item-delete-btn,
+      .top-actions,
+      .tabs {
+        display: none !important;
+      }
+      body {
+        background: white;
+      }
+      .section,
+      .metric-card {
+        box-shadow: none;
+        break-inside: avoid;
+      }
+      .movement-panel {
+        display: block !important;
+      }
+    }
+    @media (max-width: 1000px) {
+      .dashboard-grid,
+      .problem-list,
+      .flow-grid,
+      .two-column,
+      .add-form,
+      .add-task-form,
+      .add-question-form {
+        grid-template-columns: 1fr;
+      }
+    }
+    html {
+      overflow-x: hidden;
+    }
+    @media (max-width: 640px) {
+      header {
+        padding: 18px 14px;
+      }
+      header h1 {
+        font-size: 1.35rem;
+      }
+      header p {
+        font-size: 0.92rem;
+      }
+      .container {
+        padding: 12px;
+      }
+      .top-actions,
+      .section,
+      .metric-card {
+        padding: 14px;
+      }
+      button,
+      .tab-button,
+      .link-button {
+        min-height: 44px;
+        padding: 10px 14px;
+      }
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
 </head>
-<body class="console-skin">
-<div id="blade-intro"><div class="bezel"><div class="crt"><div class="scan"></div><h1 class="banner">**** CHAOS BASIC V2 ****</h1><div class="sub">64K RAM SYSTEM&nbsp;&nbsp;38911 BYTES FREE</div><div id="blade-term"></div><pre id="blade-art"></pre><div id="blade-greet"></div></div><div class="chrome"><span><span class="led"></span>BLADE CONSOLE</span><span>PRESS Y / N WHEN PROMPTED</span></div></div></div>
-<header class="topbar">
-<div class="console-mast">
-<div class="brand">BLADE AIRPORT OPS V2.0<span>WORKFORCE ALLOCATION SYSTEM</span></div>
-<div class="console-meta">AIRPORT: <b id="console-airport">DFW</b></div>
-<div class="console-meta">SCHEDULE WEEKS: <b id="console-weeks">1</b></div>
-<div class="console-meta">STAFF TOTAL: <b id="console-staff">—</b></div>
-<div class="console-meta">SYSTEM TIME: <b id="console-time">--:--:--</b></div>
-<div class="console-meta">DATE: <b id="console-date">--/--/----</b></div>
-<div class="console-status-chip">STATUS: READY</div>
-</div>
-<div class="topbar-actions">
-<button class="btn" id="btn-instructions">[HLP] INSTRUCTIONS</button>
-<button class="btn" id="btn-airport-config">[CFG] AIRFIELD</button>
-<button class="btn btn-amber" id="btn-generate">[GEN] GENERATE</button>
-<button class="btn" id="btn-export">[EXP] EXPORT</button>
-<button class="btn" id="btn-import">[IMP] IMPORT</button>
-<input type="file" id="file-import" accept="application/json,.json" style="display:none" />
-<button class="btn btn-red" id="btn-clear">[CLR] CLEAR</button>
-</div>
-</header>
-<div class="status" id="status">Loading…</div>
-<nav class="tabs">
-<button class="tab-btn active" data-tab="setup">[F1] SETUP</button>
-<button class="tab-btn" data-tab="coverage">[F2] COVERAGE</button>
-<button class="tab-btn" data-tab="demand-capacity">[F7] DEMAND</button>
-<button class="tab-btn" data-tab="lines">[F3] LINES</button>
-<button class="tab-btn" data-tab="teams">[F4] TEAMS</button>
-<button class="tab-btn" data-tab="reports">[F5] REPORTS</button>
-<button class="tab-btn" data-tab="capacity">[F6] CAPACITY</button>
-</nav>
-<main>
-<section class="panel active" id="tab-setup"></section>
-<section class="panel" id="tab-coverage"></section>
-<section class="panel" id="tab-demand-capacity"></section>
-<section class="panel" id="tab-lines"><div class="card"><div class="section-title">Bid lines</div><div id="lines-table-root"></div>
-<div class="toolbar" id="lines-toolbar"><label>Filter role <select id="lines-filter-role"><option value="ALL" selected>All</option><option value="STSO">STSO</option><option value="LTSO">LTSO</option><option value="TSO">TSO (FT/PT)</option></select></label><label>Filter shift <select id="lines-filter-shift"><option value="">All shifts</option></select></label><label>Filter sex <select id="lines-filter-sex"><option value="">All</option><option value="M">M</option><option value="F">F</option></select></label><label>Filter team <select id="lines-filter-team"><option value="">All</option><option value="__none__">Unassigned</option></select></label><button type="button" class="btn btn-amber" id="btn-export-lines-excel">Export Excel (.xlsx)</button></div></div></section>
+<body>
+  <header>
+    <p id="hello-line" class="hello-line">Hello</p>
+    <h1>Operational Movements Discovery Dashboard</h1>
+    <p>
+      A collaborative workspace to map notification flows, reduce communication gaps,
+      and improve operational visibility when team members move out of the operation.
+    </p>
+    <p class="share-status">Shared folder: <code id="share-path-code">OneDrive - USTSA\FACTTT</code></p>
+    <p id="preview-banner" class="preview-banner" hidden>
+      Browser preview — Refresh / Save use a local demo store. The Windows exe writes to OneDrive FACTTT.
+    </p>
+  </header>
+  <main class="container">
+    <section class="top-actions">
+      <div class="button-row">
+        <button type="button" class="success" id="refresh-btn" data-action="refresh">Refresh</button>
+        <button type="button" id="save-btn" data-action="save">Save</button>
+        <button type="button" data-action="print">Print / Save as PDF</button>
+        <button type="button" class="light" data-action="toggle-more">More</button>
+        <button type="button" class="warning" data-action="reset">Reset local cache</button>
+      </div>
+      <div id="more-actions" class="button-row more-actions" hidden>
+        <button type="button" class="secondary" onclick="importJsonPayload()">Import file…</button>
+      </div>
+      <div class="folder-note">
+        <strong>Source of truth:</strong> <code>data/dashboard.json</code> in the FACTTT share.
+        <br />
+        <strong>Refresh</strong> loads that file. <strong>Save</strong> writes
+        <code>data/dashboard.json</code> (so your edits stick) and
+        <code>inbox/submit-<timestamp>-<operator>.json</code>
+        for Power Automate. The app never writes a file named master.
+        <p class="edit-hint">
+          Click any highlighted field to type. Use <strong>Add Goal</strong>,
+          <strong>Add Idea</strong>, <strong>Add Question</strong>, and
+          <strong>Add Action</strong> in each section. Use ✕ or Delete to remove a row.
+          Then click <strong>Save</strong>.
+        </p>
+        <br /><br />
+        Path for this PC:
+        <br />
+        <code id="folder-path-code">C:\\Users\\Your.User.Name\\OneDrive - USTSA\\FACTTT</code>
+      </div>
+    </section>
 
-<!-- ================= TEAMS TAB ================= -->
-<section class="panel" id="tab-teams"></section>
-<!-- ============================================= -->
+    <section class="dashboard-grid">
+      <div class="metric-card">
+        <h3>Movement Types</h3>
+        <div class="value" id="movementCount">3</div>
+        <div class="sub">NDO, Training, TSST-Travel</div>
+      </div>
+      <div class="metric-card">
+        <h3>Total Ideas</h3>
+        <div class="value" id="ideaCount">0</div>
+        <div class="sub">Across all movement flows</div>
+      </div>
+      <div class="metric-card">
+        <h3>Action Progress</h3>
+        <div class="value" id="progressValue">0%</div>
+        <div class="sub">Completed discovery actions</div>
+        <div class="progress-wrap">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <h3>Teams Impacted</h3>
+        <div class="value">8</div>
+        <div class="sub">Scheduling, Payroll, CC, TSMs, Finance, Training, FSD, Sr. Management</div>
+      </div>
+    </section>
 
-<section class="panel" id="tab-capacity"><div class="card"><div class="section-title">Checkpoint capacity (TSO / STSO / LTSO)</div><p class="muted" id="capacity-summary">Open Airfield to set lanes and TSO cost per program.</p><div class="lines-scroll"><table class="data-table"><thead><tr><th>Terminal</th><th>Checkpoint</th><th>From</th><th>Lanes</th><th>Program</th><th>TSO / lane</th><th>TSO needed</th><th>Sup seats</th></tr></thead><tbody id="capacity-tbody"></tbody></table></div></div></section>
-<section class="panel" id="tab-reports"><div class="card"><div class="section-title">Management reports</div><div class="toolbar" style="flex-wrap:wrap;gap:0.75rem"><label class="follow-me-label"><input type="radio" name="report-which" value="passenger" checked /> Passenger</label><label class="follow-me-label"><input type="radio" name="report-which" value="baggage" /> Baggage / DFO duty</label><label class="follow-me-label"><input type="radio" name="report-which" value="total" /> Total</label><label class="follow-me-label"><input type="radio" name="report-which" value="dfoPool" /> DFO pool</label></div><div id="report-main"></div></div><div class="card"><div id="report-gender"></div></div><div class="card"><div class="section-title">Team cohesion</div><div id="report-cohesion"></div></div></section>
-</main>
-<div id="airport-config-modal" class="modal"><div class="modal-content"><span class="modal-close" id="modal-close-btn">&times;</span><div class="modal-header"><h2 class="modal-title">Airport Configuration</h2></div><div class="config-section"><h3 class="config-section-title">Global Airport Settings</h3><div class="grid-2"><label>Airport Start Time <input type="time" id="airport-start-time" step="900"></label><label>Airport End Time <input type="time" id="airport-end-time" step="900"></label></div></div><div class="config-section"><h3 class="config-section-title">Terminals <button class="btn" id="add-terminal-btn">+ Add Terminal</button></h3><div id="terminals-list" class="item-list"></div></div><div id="detail-view" style="display:none;"><div class="modal-tabs" id="detail-tabs"></div><div id="detail-panels"></div></div></div></div>
-<div id="shift-day-times-modal" class="modal"><div class="modal-content"><span class="modal-close" id="shift-day-times-close">&times;</span><div class="modal-header"><h2 class="modal-title" id="shift-day-times-title">Day times</h2></div><table class="data-table"><thead><tr><th>Day</th><th></th><th>Start</th><th>End</th><th>Duration</th></tr></thead><tbody id="shift-day-times-tbody"></tbody></table><div class="toolbar" style="margin-top:1rem"><button type="button" class="btn" id="btn-sdt-clear">Clear all overrides</button><button type="button" class="btn btn-amber" id="btn-sdt-save">Save</button><button type="button" class="btn" id="btn-sdt-cancel">Cancel</button></div></div></div>
-<div id="team-detail-modal" class="modal"><div class="modal-content"><span class="modal-close" id="team-detail-close">&times;</span><div class="modal-header"><h2 class="modal-title" id="team-detail-title">Team Details</h2></div><div id="team-detail-content"></div></div></div>
-<div id="instructions-modal" class="modal"><div class="modal-content"><span class="modal-close" id="instructions-modal-close">&times;</span><div class="modal-header"><h2 class="modal-title">Instructions</h2></div><div id="instructions-content" class="instructions-container" style="max-height:70vh;overflow:auto;white-space:pre-wrap"></div></div></div>
+    <section class="section">
+      <h2>📌 Core Problem</h2>
+      <div class="problem-list">
+        <div class="problem-card">
+          <strong contenteditable="true">Current Process</strong>
+          <div class="editable-content" contenteditable="true">Manual email forwards.</div>
+        </div>
+        <div class="problem-card">
+          <strong contenteditable="true">The Gap</strong>
+          <div class="editable-content" contenteditable="true">Not everyone gets the memo. Key operational teams lack visibility on who is gone, where they are, and when they will return.</div>
+        </div>
+        <div class="problem-card">
+          <strong contenteditable="true">Target Audience</strong>
+          <div class="editable-content" contenteditable="true">Scheduling, Payroll, Coordination Center, TSMs, Finance, Training, and Senior Management.</div>
+        </div>
+      </div>
+    </section>
 
-<footer class="console-footer"><span>SYSTEM STATUS: <b>READY</b></span><span>LINES GENERATED: <b id="console-lines">0</b></span><span>NAV: F1–F7</span></footer>
-<script src="lib/dayjs.min.js?v=20260902i"></script>
-<script src="lib/Sortable.min.js?v=20260902i"></script>
-<script src="lib/luxon.min.js?v=20260902i"></script>
-<script src="lib/exceljs.min.js?v=20260902i"></script>
-<script src="js/constants.js?v=20260902i"></script>
-<script src="js/state.js?v=20260902i"></script>
-<script src="js/utils.js?v=20260902i"></script>
-<script src="js/shifts.js?v=20260902i"></script>
-<script src="js/allocation.js?v=20260902i"></script>
-<script src="js/lines-row-model.js?v=20260914a"></script>
-<script src="js/render.js?v=20260902i"></script>
-<script src="js/line-colors.js?v=20260905b"></script>
-<script src="js/reports.js?v=20260902i"></script>
-<script src="js/schedule.js?v=20260902i"></script>
-<script src="js/io.js?v=20260905a"></script>
-<script src="js/airport.js?v=20260902i"></script>
-<script src="js/capacity.js?v=20260905b"></script>
-<script src="js/modset-board.js?v=20260905b"></script>
-<script src="js/export-board.js?v=20260905c"></script>
-<!-- js/team-core.js removed: handled entirely by modules/team-builder/index.js -->
-<script src="js/instructions.js?v=20260903a"></script>
-<script src="js/main.js?v=20260904f"></script>
-<script src="js/console-chrome.js?v=20260904f"></script>
-<script src="js/airfield-boot.js?v=20260905g"></script>
-<script src="js/intro.js?v=20260905g"></script>
-<!-- js/coverage-cuts.js removed: owned by modules/coverage -->
+    <section class="section">
+      <h2>🎯 Goals and Objectives <button type="button" class="light" onclick="toggleSection('goals-objectives-content', this)">Collapse</button></h2>
+      <div id="goals-objectives-content" class="collapsible-content">
+          <div class="two-column">
+            <div>
+              <h3>Goals</h3>
+              <ul id="goals-list" class="editable-bullet-list">
+                <li contenteditable="true">Improve visibility when personnel move out of the operation.</li>
+                <li contenteditable="true">Reduce manual forwarding and delayed notifications.</li>
+                <li contenteditable="true">Standardize required movement notification fields.</li>
+                <li contenteditable="true">Ensure impacted teams receive timely, accurate information.</li>
+                <li contenteditable="true">Create a repeatable notification model for future movement types.</li>
+              </ul>
+              <div class="add-list-form">
+                <input type="text" id="newGoal" placeholder="Enter a new goal" />
+                <button type="button" id="add-goal-btn" onclick="addListItem('goals-list','newGoal','Goal')">Add Goal</button>
+              </div>
+            </div>
+            <div>
+              <h3>Objectives</h3>
+              <ul id="objectives-list" class="editable-bullet-list">
+                <li contenteditable="true">Identify the upstream sender for each movement type.</li>
+                <li contenteditable="true">Confirm required recipients and distribution lists.</li>
+                <li contenteditable="true">Define standard departure, duration, return, and location fields.</li>
+                <li contenteditable="true">Determine advance notice requirements by team.</li>
+                <li contenteditable="true">Identify automation opportunities using distribution lists, forms, or Power Automate.</li>
+              </ul>
+              <div class="add-list-form">
+                <input type="text" id="newObjective" placeholder="Enter a new objective" />
+                <button type="button" id="add-objective-btn" onclick="addListItem('objectives-list','newObjective','Objective')">Add Objective</button>
+              </div>
+          </div>
+      </div>
+    </section>
 
-<script type="module">
-(async () => {
-  let manifest = {};
-  try {
-    const resp = await fetch("modules/manifest.json");
-    if (!resp.ok) throw new Error("manifest " + resp.status);
-    manifest = await resp.json();
-  } catch (e) {
-    console.warn("manifest", e);
-    return;
-  }
+    <section class="section">
+      <h2>📍 Movement Flows</h2>
+      <div class="tabs">
+        <button type="button" class="tab-button active" onclick="showTab('ndo')">NDO Movement</button>
+        <button type="button" class="tab-button" onclick="showTab('training')">Training Movement</button>
+        <button type="button" class="tab-button" onclick="showTab('tsst')">TSST-Travel</button>
+        <button type="button" class="tab-button" onclick="showTab('overview')">Cross-Flow Summary</button>
+      </div>
 
-  const Scheduler = await new Promise((resolve) => {
-    (function check() {
-      if (window.Scheduler) resolve(window.Scheduler);
-      else setTimeout(check, 50);
-    })();
-  });
+      <!-- NDO Movement Panel -->
+      <div id="ndo" class="movement-panel active">
+        <h2>NDO Movement</h2>
+        <div class="flow-grid">
+          <div class="flow-item">
+            <strong>Current Recipients</strong>
+            <div class="tag-list">
+              <span class="tag" contenteditable="true">FSD</span>
+              <span class="tag" contenteditable="true">AFSD-S</span>
+            </div>
+          </div>
+          <div class="flow-item">
+            <strong>Teams Needing Notification</strong>
+            <div class="tag-list">
+              <span class="tag" contenteditable="true">Scheduling</span>
+              <span class="tag" contenteditable="true">Payroll</span>
+              <span class="tag" contenteditable="true">CC</span>
+              <span class="tag" contenteditable="true">TSMs</span>
+              <span class="tag" contenteditable="true">Finance</span>
+              <span class="tag" contenteditable="true">Training</span>
+            </div>
+          </div>
+          <div class="flow-item">
+            <strong>Personnel</strong>
+            <div class="editable-content" contenteditable="true">Team members moving out of operation for NDO.</div>
+          </div>
+          <div class="flow-item">
+            <strong>Notification Need</strong>
+            <div class="editable-content" contenteditable="true">Personnel movement out of the operation, including departure dates, duration, assignment location, and return date.</div>
+          </div>
+          <div class="flow-item">
+            <strong>Movement Path</strong>
+            <div class="editable-content" contenteditable="true">Home operation → Assignment location → Return to operation.</div>
+          </div>
+          <div class="flow-item">
+            <strong>Status</strong>
+            <span class="status-pill" contenteditable="true">Discovery Needed</span>
+          </div>
+        </div>
 
-  for (const [name, raw] of Object.entries(manifest)) {
-    const cfg = typeof raw === "string" ? { entry: raw, init: "initTeamBuilder" } : raw;
-    try {
-      for (const href of cfg.css || []) {
-        if (document.querySelector(`link[data-module-css="${href}"]`)) continue;
-        const link = document.createElement("link");
-        link.rel = "stylesheet";
-        link.href = href;
-        link.dataset.moduleCss = href;
-        document.head.appendChild(link);
+        <h3>💡 Ideas and Discussion</h3>
+        <table id="ndoIdeas">
+          <thead>
+            <tr>
+              <th>Idea / Proposal</th>
+              <th>How / Contributor</th>
+              <th>Pros and Concerns</th>
+              <th>Team Feedback</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td contenteditable="true">Add DALScheduling@tsa.dhs.gov to the recipient list via request.</td>
+              <td contenteditable="true">Power Automate or distribution list update</td>
+              <td contenteditable="true">Eliminates manual forward delay and improves visibility.</td>
+              <td class="feedback-cell">
+                <div class="feedback-controls">
+                  <button type="button" onclick="changeFeedback(this, -1)">−</button>
+                  <span class="feedback-number">0</span>
+                  <button type="button" onclick="changeFeedback(this, 1)">+</button>
+                </div>
+              </td>
+              <td><button type="button" class="danger" onclick="deleteIdea(this)">Delete</button></td>
+            </tr>
+            <tr>
+              <td contenteditable="true">Standardized departure/return notice template.</td>
+              <td contenteditable="true">@Name</td>
+              <td contenteditable="true">Ensures exact dates are provided upfront.</td>
+              <td class="feedback-cell">
+                <div class="feedback-controls">
+                  <button type="button" onclick="changeFeedback(this, -1)">−</button>
+                  <span class="feedback-number">0</span>
+                  <button type="button" onclick="changeFeedback(this, 1)">+</button>
+                </div>
+              </td>
+              <td><button type="button" class="danger" onclick="deleteIdea(this)">Delete</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="add-form">
+          <div>
+            <label for="ndoIdeaText">Idea / Proposal</label>
+            <input type="text" id="ndoIdeaText" placeholder="Enter new idea" />
+          </div>
+          <div>
+            <label for="ndoIdeaHow">How / Contributor</label>
+            <input type="text" id="ndoIdeaHow" placeholder="@Name or method" />
+          </div>
+          <div>
+            <label for="ndoIdeaPros">Pros and Concerns</label>
+            <input type="text" id="ndoIdeaPros" placeholder="Benefits, risks, concerns" />
+          </div>
+          <button type="button" id="ndo-add-idea-btn" onclick="addIdea('ndoIdeas','ndoIdeaText','ndoIdeaHow','ndoIdeaPros')">Add Idea</button>
+        </div>
+
+        <h3>Discussion Questions</h3>
+        <ul id="ndo-question-list" class="question-list">
+          <li>
+            <span contenteditable="true">Scheduling: How many days in advance do you need this notice to adjust shift rosters?</span>
+            <button type="button" class="item-delete-btn" onclick="deleteItem(this)" title="Delete question">✕</button>
+          </li>
+          <li>
+            <span contenteditable="true">Payroll: What specific dates and labor codes are required to maintain timekeeping accuracy?</span>
+            <button type="button" class="item-delete-btn" onclick="deleteItem(this)" title="Delete question">✕</button>
+          </li>
+        </ul>
+        <div class="add-question-form">
+          <div>
+            <label for="ndoNewQuestion">New Discussion Question</label>
+            <input type="text" id="ndoNewQuestion" placeholder="Enter new question" />
+          </div>
+          <button type="button" class="light" onclick="addQuestion('ndo-question-list', 'ndoNewQuestion')">Add Question</button>
+        </div>
+
+        <h3>✅ Action Items</h3>
+        <ul id="ndo-task-list" class="task-list">
+          <li>
+            <input type="checkbox" onchange="updateProgress()">
+            <span contenteditable="true">Identify upstream sender who initiates the NDO notifications to FSD/AFSD-S</span>
+            <button type="button" class="item-delete-btn" onclick="deleteAction(this)" title="Delete action item">✕</button>
+          </li>
+          <li>
+            <input type="checkbox" onchange="updateProgress()">
+            <span contenteditable="true">Finalize standard fields required for NDO movement notifications</span>
+            <button type="button" class="item-delete-btn" onclick="deleteAction(this)" title="Delete action item">✕</button>
+          </li>
+        </ul>
+        <div class="add-task-form">
+          <div>
+            <label for="ndoNewTask">New Action Item</label>
+            <input type="text" id="ndoNewTask" placeholder="Enter new action item" />
+          </div>
+          <button type="button" onclick="addAction('ndo-task-list', 'ndoNewTask')">Add Action</button>
+        </div>
+      </div>
+
+      <!-- Training Movement Panel -->
+      <div id="training" class="movement-panel">
+        <h2>Training Movement</h2>
+        <div class="flow-grid">
+          <div class="flow-item">
+            <strong>Current Recipient</strong>
+            <div class="tag-list">
+              <span class="tag" contenteditable="true">David McBride</span>
+            </div>
+          </div>
+          <div class="flow-item">
+            <strong>Teams Needing Notification</strong>
+            <div class="tag-list">
+              <span class="tag" contenteditable="true">Scheduling</span>
+              <span class="tag" contenteditable="true">Payroll</span>
+              <span class="tag" contenteditable="true">CC</span>
+              <span class="tag" contenteditable="true">TSMs</span>
+              <span class="tag" contenteditable="true">Finance</span>
+              <span class="tag" contenteditable="true">Sr. Management</span>
+            </div>
+          </div>
+          <div class="flow-item">
+            <strong>Personnel</strong>
+            <div class="editable-content" contenteditable="true">Team members moving out of operation for Training.</div>
+          </div>
+          <div class="flow-item">
+            <strong>Notification Need</strong>
+            <div class="editable-content" contenteditable="true">Departure dates, training duration, training location, and return date.</div>
+          </div>
+          <div class="flow-item">
+            <strong>Movement Path</strong>
+            <div class="editable-content" contenteditable="true">Home operation → Training location → Return to operation.</div>
+          </div>
+          <div class="flow-item">
+            <strong>Status</strong>
+            <span class="status-pill" contenteditable="true">Discovery Needed</span>
+          </div>
+        </div>
+
+        <h3>💡 Ideas and Discussion</h3>
+        <table id="trainingIdeas">
+          <thead>
+            <tr>
+              <th>Idea / Proposal</th>
+              <th>Contributor</th>
+              <th>Pros and Concerns</th>
+              <th>Team Feedback</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td contenteditable="true">Direct roster notification to impacted teams.</td>
+              <td contenteditable="true">@Name</td>
+              <td contenteditable="true">David does not have to forward manually.</td>
+              <td class="feedback-cell">
+                <div class="feedback-controls">
+                  <button type="button" onclick="changeFeedback(this, -1)">−</button>
+                  <span class="feedback-number">0</span>
+                  <button type="button" onclick="changeFeedback(this, 1)">+</button>
+                </div>
+              </td>
+              <td><button type="button" class="danger" onclick="deleteIdea(this)">Delete</button></td>
+            </tr>
+            <tr>
+              <td contenteditable="true">Central calendar marker for training cohorts.</td>
+              <td contenteditable="true">@Name</td>
+              <td contenteditable="true">Provides real-time visibility across shifts.</td>
+              <td class="feedback-cell">
+                <div class="feedback-controls">
+                  <button type="button" onclick="changeFeedback(this, -1)">−</button>
+                  <span class="feedback-number">0</span>
+                  <button type="button" onclick="changeFeedback(this, 1)">+</button>
+                </div>
+              </td>
+              <td><button type="button" class="danger" onclick="deleteIdea(this)">Delete</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="add-form">
+          <div>
+            <label for="trainingIdeaText">Idea / Proposal</label>
+            <input type="text" id="trainingIdeaText" placeholder="Enter new idea" />
+          </div>
+          <div>
+            <label for="trainingIdeaHow">Contributor</label>
+            <input type="text" id="trainingIdeaHow" placeholder="@Name" />
+          </div>
+          <div>
+            <label for="trainingIdeaPros">Pros and Concerns</label>
+            <input type="text" id="trainingIdeaPros" placeholder="Benefits, risks, concerns" />
+          </div>
+          <button type="button" onclick="addIdea('trainingIdeas','trainingIdeaText','trainingIdeaHow','trainingIdeaPros')">Add Idea</button>
+        </div>
+
+        <h3>Discussion Questions</h3>
+        <ul id="training-question-list" class="question-list">
+          <li>
+            <span contenteditable="true">TSMs: What is the easiest format for shift managers to verify who is pulled for training?</span>
+            <button type="button" class="item-delete-btn" onclick="deleteItem(this)" title="Delete question">✕</button>
+          </li>
+          <li>
+            <span contenteditable="true">Training: How far in advance are training rosters officially locked?</span>
+            <button type="button" class="item-delete-btn" onclick="deleteItem(this)" title="Delete question">✕</button>
+          </li>
+        </ul>
+        <div class="add-question-form">
+          <div>
+            <label for="trainingNewQuestion">New Discussion Question</label>
+            <input type="text" id="trainingNewQuestion" placeholder="Enter new question" />
+          </div>
+          <button type="button" class="light" onclick="addQuestion('training-question-list', 'trainingNewQuestion')">Add Question</button>
+        </div>
+
+        <h3>✅ Action Items</h3>
+        <ul id="training-task-list" class="task-list">
+          <li>
+            <input type="checkbox" onchange="updateProgress()">
+            <span contenteditable="true">Sync with David McBride on current roster lock timeline</span>
+            <button type="button" class="item-delete-btn" onclick="deleteAction(this)" title="Delete action item">✕</button>
+          </li>
+          <li>
+            <input type="checkbox" onchange="updateProgress()">
+            <span contenteditable="true">Determine if Sr. Management requires individual notices or weekly rollups</span>
+            <button type="button" class="item-delete-btn" onclick="deleteAction(this)" title="Delete action item">✕</button>
+          </li>
+        </ul>
+        <div class="add-task-form">
+          <div>
+            <label for="trainingNewTask">New Action Item</label>
+            <input type="text" id="trainingNewTask" placeholder="Enter new action item" />
+          </div>
+          <button type="button" onclick="addAction('training-task-list', 'trainingNewTask')">Add Action</button>
+        </div>
+      </div>
+
+      <!-- TSST-Travel Panel -->
+      <div id="tsst" class="movement-panel">
+        <h2>TSST-Travel</h2>
+        <div class="flow-grid">
+          <div class="flow-item">
+            <strong>Current Recipient</strong>
+            <div class="tag-list">
+              <span class="tag warning" contenteditable="true">Joel Barron? Confirming</span>
+            </div>
+          </div>
+          <div class="flow-item">
+            <strong>Teams Needing Notification</strong>
+            <div class="tag-list">
+              <span class="tag" contenteditable="true">Scheduling</span>
+              <span class="tag" contenteditable="true">Payroll</span>
+              <span class="tag" contenteditable="true">CC</span>
+              <span class="tag" contenteditable="true">TSMs</span>
+              <span class="tag" contenteditable="true">Finance</span>
+              <span class="tag" contenteditable="true">Training</span>
+              <span class="tag" contenteditable="true">Sr. Management</span>
+            </div>
+          </div>
+          <div class="flow-item">
+            <strong>Personnel</strong>
+            <div class="editable-content" contenteditable="true">Team members traveling out of operation for TSST.</div>
+          </div>
+          <div class="flow-item">
+            <strong>Notification Need</strong>
+            <div class="editable-content" contenteditable="true">Travel departure, duration away, destination, field deployment, return date, and extension updates.</div>
+          </div>
+          <div class="flow-item">
+            <strong>Movement Path</strong>
+            <div class="editable-content" contenteditable="true">Home operation → Travel destination → Return to operation.</div>
+          </div>
+          <div class="flow-item">
+            <strong>Status</strong>
+            <span class="status-pill risk" contenteditable="true">Recipient Confirmation Needed</span>
+          </div>
+        </div>
+
+        <h3>💡 Ideas and Discussion</h3>
+        <table id="tsstIdeas">
+          <thead>
+            <tr>
+              <th>Idea / Proposal</th>
+              <th>Contributor</th>
+              <th>Pros and Concerns</th>
+              <th>Team Feedback</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td contenteditable="true">Travel Distribution List.</td>
+              <td contenteditable="true">@Name</td>
+              <td contenteditable="true">Single send notifies all target groups.</td>
+              <td class="feedback-cell">
+                <div class="feedback-controls">
+                  <button type="button" onclick="changeFeedback(this, -1)">−</button>
+                  <span class="feedback-number">0</span>
+                  <button type="button" onclick="changeFeedback(this, 1)">+</button>
+                </div>
+              </td>
+              <td><button type="button" class="danger" onclick="deleteIdea(this)">Delete</button></td>
+            </tr>
+            <tr>
+              <td contenteditable="true">Flight and extension update channel.</td>
+              <td contenteditable="true">@Name</td>
+              <td contenteditable="true">Instant visibility if return date shifts.</td>
+              <td class="feedback-cell">
+                <div class="feedback-controls">
+                  <button type="button" onclick="changeFeedback(this, -1)">−</button>
+                  <span class="feedback-number">0</span>
+                  <button type="button" onclick="changeFeedback(this, 1)">+</button>
+                </div>
+              </td>
+              <td><button type="button" class="danger" onclick="deleteIdea(this)">Delete</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="add-form">
+          <div>
+            <label for="tsstIdeaText">Idea / Proposal</label>
+            <input type="text" id="tsstIdeaText" placeholder="Enter new idea" />
+          </div>
+          <div>
+            <label for="tsstIdeaHow">Contributor</label>
+            <input type="text" id="tsstIdeaHow" placeholder="@Name" />
+          </div>
+          <div>
+            <label for="tsstIdeaPros">Pros and Concerns</label>
+            <input type="text" id="tsstIdeaPros" placeholder="Benefits, risks, concerns" />
+          </div>
+          <button type="button" onclick="addIdea('tsstIdeas','tsstIdeaText','tsstIdeaHow','tsstIdeaPros')">Add Idea</button>
+        </div>
+
+        <h3>Discussion Questions</h3>
+        <ul id="tsst-question-list" class="question-list">
+          <li>
+            <span contenteditable="true">Coordination Center: What specific travel or flight details do you need while members are deployed?</span>
+            <button type="button" class="item-delete-btn" onclick="deleteItem(this)" title="Delete question">✕</button>
+          </li>
+          <li>
+            <span contenteditable="true">Joel / Travel Leads: How are schedule extensions currently reported back to the home station?</span>
+            <button type="button" class="item-delete-btn" onclick="deleteItem(this)" title="Delete question">✕</button>
+          </li>
+        </ul>
+        <div class="add-question-form">
+          <div>
+            <label for="tsstNewQuestion">New Discussion Question</label>
+            <input type="text" id="tsstNewQuestion" placeholder="Enter new question" />
+          </div>
+          <button type="button" class="light" onclick="addQuestion('tsst-question-list', 'tsstNewQuestion')">Add Question</button>
+        </div>
+
+        <h3>✅ Action Items</h3>
+        <ul id="tsst-task-list" class="task-list">
+          <li>
+            <input type="checkbox" onchange="updateProgress()">
+            <span contenteditable="true">Confirm notification touchpoints with Joel Barron</span>
+            <button type="button" class="item-delete-btn" onclick="deleteAction(this)" title="Delete action item">✕</button>
+          </li>
+          <li>
+            <input type="checkbox" onchange="updateProgress()">
+            <span contenteditable="true">Confirm email addresses or distribution lists for all target groups</span>
+            <button type="button" class="item-delete-btn" onclick="deleteAction(this)" title="Delete action item">✕</button>
+          </li>
+        </ul>
+        <div class="add-task-form">
+          <div>
+            <label for="tsstNewTask">New Action Item</label>
+            <input type="text" id="tsstNewTask" placeholder="Enter new action item" />
+          </div>
+          <button type="button" onclick="addAction('tsst-task-list', 'tsstNewTask')">Add Action</button>
+        </div>
+      </div>
+
+      <!-- Overview Panel -->
+      <div id="overview" class="movement-panel">
+        <h2>Cross-Flow Summary</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Movement Type</th>
+              <th>Current Recipient</th>
+              <th>Primary Gap</th>
+              <th>Recommended First Fix</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>NDO Movement</td>
+              <td>FSD, AFSD-S</td>
+              <td>Scheduling, Payroll, CC, TSMs, Finance, and Training may not receive timely notice.</td>
+              <td>Add required distribution recipients and define standardized fields.</td>
+              <td><span class="status-pill">Discovery Needed</span></td>
+            </tr>
+            <tr>
+              <td>Training Movement</td>
+              <td>David McBride</td>
+              <td>Manual forwarding creates delay and single-person dependency.</td>
+              <td>Direct roster notification or central calendar marker.</td>
+              <td><span class="status-pill">Discovery Needed</span></td>
+            </tr>
+            <tr>
+              <td>TSST-Travel</td>
+              <td>Joel Barron? Confirming</td>
+              <td>Recipient path and extension reporting are unclear.</td>
+              <td>Confirm travel lead and establish travel distribution list.</td>
+              <td><span class="status-pill risk">Confirmation Needed</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <h3>Recommended Standard Notification Fields</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Purpose</th>
+              <th>Required For</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Employee Name</td>
+              <td>Identifies the person moving out of operation.</td>
+              <td>All movement types</td>
+            </tr>
+            <tr>
+              <td>Home Operation / Team</td>
+              <td>Shows where the employee is moving from.</td>
+              <td>All movement types</td>
+            </tr>
+            <tr>
+              <td>Movement Type</td>
+              <td>NDO, Training, TSST-Travel, or future category.</td>
+              <td>All movement types</td>
+            </tr>
+            <tr>
+              <td>Departure Date</td>
+              <td>Supports scheduling and payroll planning.</td>
+              <td>All movement types</td>
+            </tr>
+            <tr>
+              <td>Expected Return Date</td>
+              <td>Supports roster recovery and staffing plans.</td>
+              <td>All movement types</td>
+            </tr>
+            <tr>
+              <td>Destination / Assignment Location</td>
+              <td>Shows where the employee is going.</td>
+              <td>NDO, Training, TSST-Travel</td>
+            </tr>
+            <tr>
+              <td>Duration</td>
+              <td>Helps estimate operational impact.</td>
+              <td>All movement types</td>
+            </tr>
+            <tr>
+              <td>Labor Code / Timekeeping Notes</td>
+              <td>Supports accurate payroll processing.</td>
+              <td>Payroll, Finance</td>
+            </tr>
+            <tr>
+              <td>Extension / Change Notice</td>
+              <td>Captures changes to return date or travel status.</td>
+              <td>TSST-Travel, NDO, Training as needed</td>
+            </tr>
+            <tr>
+              <td>Point of Contact</td>
+              <td>Identifies who can answer questions.</td>
+              <td>All movement types</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>📝 Shared Notes</h2>
+      <p class="small-muted">
+        Use this section during working sessions to capture decisions, open questions, or follow-up items.
+        Notes are included when you Save to inbox.
+      </p>
+      <textarea id="sharedNotes" class="notes-area" placeholder="Enter shared notes here..."></textarea>
+      <div class="instruction-box">
+        <h3>Daily workflow</h3>
+        <ol>
+          <li>Open OperationalMovements.exe from <strong>OneDrive - USTSA\\FACTTT</strong>.</li>
+          <li>The app greets you and Refresh-loads <code>data/dashboard.json</code>.</li>
+          <li>Edit ideas, actions, questions, and notes.</li>
+          <li>Select <strong>Save</strong>. That updates <code>data/dashboard.json</code> and writes a copy to <code>inbox/</code>.</li>
+          <li>Power Automate merges that file into <code>data/dashboard.json</code>, posts Teams, and moves it to <code>archive/</code>.</li>
+          <li>Select <strong>Refresh</strong> later to pick up merges from other operators.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>🚦 Recommended Next Steps</h2>
+      <ol>
+        <li>Confirm the upstream sender for each movement type.</li>
+        <li>Confirm the correct distribution list or mailbox for each impacted team.</li>
+        <li>Agree on mandatory notification fields.</li>
+        <li>Decide whether each movement type needs individual notice, weekly rollup, or both.</li>
+        <li>Build a standard notification template or form.</li>
+        <li>Evaluate Power Automate for routing, logging, and calendar visibility.</li>
+      </ol>
+    </section>
+
+    <div class="footer-note">
+      Operational Movements Discovery Dashboard. Shared source of truth is data/dashboard.json in FACTTT.
+    </div>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const STORAGE_KEY = "operational_movements_dashboard_facttt_v2";
+    const DEMO_DASHBOARD_KEY = "omd_preview_dashboard_json";
+    const JSON_FOLDER_DISPLAY_NAME = "OneDrive - USTSA\\FACTTT";
+    const APP_TITLE = "Operational Movements Discovery Dashboard";
+
+    let currentOperator = "";
+    let sharePath = "";
+    let toastTimer = null;
+
+    function getTauriInvoke() {
+      const invoke = window.__TAURI__?.core?.invoke;
+      if (typeof invoke !== "function") {
+        throw new Error("Tauri invoke API is unavailable.");
+      }
+      return invoke;
+    }
+
+    function isTauri() {
+      return typeof window.__TAURI__?.core?.invoke === "function";
+    }
+
+    async function invokeCommand(name, args = {}) {
+      const invoke = getTauriInvoke();
+      try {
+        return await invoke(name, args);
+      } catch (error) {
+        console.error(`Tauri command failed: ${name}`, error);
+        throw error;
+      }
+    }
+
+    function showToast(message, kind) {
+      const el = document.getElementById("toast");
+      if (!el) {
+        alert(message);
+        return;
+      }
+      el.textContent = message;
+      el.className = "toast show " + (kind === "err" ? "err" : "ok");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        el.classList.remove("show");
+      }, 5200);
+    }
+
+    function toggleMoreActions() {
+      const row = document.getElementById("more-actions");
+      if (!row) return;
+      row.hidden = !row.hidden;
+    }
+
+    function cachePayload() {
+      try {
+        const json = JSON.stringify(buildSharePayload());
+        localStorage.setItem(STORAGE_KEY, json);
+        localStorage.setItem(DEMO_DASHBOARD_KEY, json);
+      } catch (error) {
+        console.error("Optional cache skipped.", error);
+      }
+    }
+
+    function showTab(tabId) {
+      document.querySelectorAll(".movement-panel").forEach(panel => {
+        panel.classList.remove("active");
+      });
+      document.querySelectorAll(".tab-button").forEach(button => {
+        button.classList.remove("active");
+      });
+      const selectedPanel = document.getElementById(tabId);
+      if (selectedPanel) {
+        selectedPanel.classList.add("active");
+      }
+      const buttons = Array.from(document.querySelectorAll(".tab-button"));
+      const selected = buttons.find(btn => {
+        const text = btn.textContent.toLowerCase();
+        if (tabId === "ndo") return text.includes("ndo");
+        if (tabId === "training") return text.includes("training");
+        if (tabId === "tsst") return text.includes("tsst");
+        if (tabId === "overview") return text.includes("summary");
+        return false;
+      });
+      if (selected) selected.classList.add("active");
+    }
+
+    function toggleSection(sectionId, button) {
+      const content = document.getElementById(sectionId);
+      content.classList.toggle('collapsed');
+      if (content.classList.contains('collapsed')) {
+        button.textContent = 'Expand';
+      } else {
+        button.textContent = 'Collapse';
+      }
+    }
+
+    function changeFeedback(button, delta) {
+      const numberSpan = button.parentElement.querySelector(".feedback-number");
+      let value = parseInt(numberSpan.textContent || "0", 10);
+      value += delta;
+      if (value < 0) value = 0;
+      numberSpan.textContent = value;
+      updateMetrics();
+      cachePayload();
+    }
+
+    function addIdea(tableId, ideaInputId, howInputId, prosInputId) {
+      const ideaInput = document.getElementById(ideaInputId);
+      const howInput = document.getElementById(howInputId);
+      const prosInput = document.getElementById(prosInputId);
+      const idea = ideaInput.value.trim();
+      const how = howInput.value.trim();
+      const pros = prosInput.value.trim();
+      if (!idea) {
+        alert("Please enter an idea or proposal.");
+        return;
+      }
+      addPayloadIdeaRow(tableId, {
+        idea: idea,
+        contributor: how || "@Name",
+        prosAndConcerns: pros || "Pending discussion",
+        feedback: 0,
+        deleted: false
+      });
+      ideaInput.value = "";
+      howInput.value = "";
+      prosInput.value = "";
+      updateMetrics();
+      cachePayload();
+      showToast("Idea added. Click Save to write it to FACTTT.", "ok");
+    }
+
+    function deleteIdea(button) {
+      const row = button.closest('tr');
+      if (row) {
+        row.setAttribute('data-deleted', 'true');
+        row.style.display = 'none';
+        updateMetrics();
+        cachePayload();
+        showToast("Idea removed. Click Save to write the change.", "ok");
+      }
+    }
+
+    function addListItem(listId, inputId, kind) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const text = input.value.trim();
+      if (!text) {
+        showToast("Please enter a " + String(kind || "item").toLowerCase() + " first.", "err");
+        return;
+      }
+      const list = document.getElementById(listId);
+      if (!list) return;
+      list.appendChild(makeEditableListItem(text));
+      input.value = "";
+      cachePayload();
+      showToast((kind || "Item") + " added. Click Save to write it to FACTTT.", "ok");
+    }
+
+    function makeEditableListItem(text) {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <span contenteditable="true">${escapeHtml(text)}</span>
+        <button type="button" class="item-delete-btn" onclick="deleteItem(this)" title="Delete">✕</button>
+      `;
+      return li;
+    }
+
+    function decorateEditableList(listId) {
+      const list = document.getElementById(listId);
+      if (!list) return;
+      Array.from(list.querySelectorAll("li")).forEach((li) => {
+        if (li.querySelector(".item-delete-btn")) return;
+        const text = li.innerText.trim();
+        li.removeAttribute("contenteditable");
+        li.innerHTML = `
+          <span contenteditable="true">${escapeHtml(text)}</span>
+          <button type="button" class="item-delete-btn" onclick="deleteItem(this)" title="Delete">✕</button>
+        `;
+      });
+    }
+
+    function addAction(taskListId, inputId) {
+      const input = document.getElementById(inputId);
+      const text = input.value.trim();
+      if (!text) {
+        alert('Please enter an action item.');
+        return;
       }
 
-      if (cfg.panel && cfg.mount) {
-        const mount = document.querySelector(cfg.mount);
-        if (mount) {
-          const r = await fetch(cfg.panel);
-          if (r.ok) mount.innerHTML = await r.text();
+      const taskList = document.getElementById(taskListId);
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <input type="checkbox" onchange="updateProgress()">
+        <span contenteditable="true">${escapeHtml(text)}</span>
+        <button type="button" class="item-delete-btn" onclick="deleteAction(this)" title="Delete action item">✕</button>
+      `;
+      taskList.appendChild(li);
+      input.value = '';
+      updateProgress();
+      cachePayload();
+      showToast("Action added. Click Save to write it to FACTTT.", "ok");
+    }
+
+    function deleteAction(button) {
+      const li = button.closest('li');
+      if (li) {
+        li.remove();
+        updateProgress();
+        cachePayload();
+        showToast("Action removed. Click Save to write the change.", "ok");
+      }
+    }
+
+    function addQuestion(questionListId, inputId) {
+      const input = document.getElementById(inputId);
+      const text = input.value.trim();
+      if (!text) {
+        alert('Please enter a discussion question.');
+        return;
+      }
+
+      const list = document.getElementById(questionListId);
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <span contenteditable="true">${escapeHtml(text)}</span>
+        <button type="button" class="item-delete-btn" onclick="deleteItem(this)" title="Delete question">✕</button>
+      `;
+      list.appendChild(li);
+      input.value = '';
+      cachePayload();
+      showToast("Question added. Click Save to write it to FACTTT.", "ok");
+    }
+
+    function deleteItem(button) {
+      const li = button.closest('li');
+      if (li) {
+        li.remove();
+        cachePayload();
+        showToast("Removed. Click Save to write the change.", "ok");
+      }
+    }
+
+    function updateProgress() {
+      const checkboxes = document.querySelectorAll('.task-list input[type="checkbox"]');
+      const checked = document.querySelectorAll('.task-list input[type="checkbox"]:checked');
+      checkboxes.forEach(box => {
+        const li = box.closest("li");
+        if (box.checked) {
+          li.classList.add("task-complete");
+        } else {
+          li.classList.remove("task-complete");
+        }
+      });
+      const percent = checkboxes.length === 0
+        ? 0
+        : Math.round((checked.length / checkboxes.length) * 100);
+      document.getElementById("progressValue").textContent = percent + "%";
+      document.getElementById("progressBar").style.width = percent + "%";
+      cachePayload();
+    }
+
+    function updateMetrics() {
+      const totalIdeaRows = document.querySelectorAll("#ndoIdeas tbody tr:not([data-deleted='true'])").length +
+          document.querySelectorAll("#trainingIdeas tbody tr:not([data-deleted='true'])").length +
+          document.querySelectorAll("#tsstIdeas tbody tr:not([data-deleted='true'])").length;
+      document.getElementById("ideaCount").textContent = totalIdeaRows;
+      updateProgress();
+    }
+
+    function operatorName() {
+      if (currentOperator) return currentOperator;
+      return localStorage.getItem("operational_movements_exported_by") || "Unknown";
+    }
+
+    function flattenItems(payload) {
+      const items = [];
+      const movements = payload.movements || {};
+      ["ndo", "training", "tsst"].forEach((key) => {
+        const ideas = (movements[key] && movements[key].ideas) || [];
+        ideas.forEach((idea) => {
+          if (idea && !idea.deleted && idea.idea) {
+            items.push({
+              movement: key,
+              idea: idea.idea,
+              contributor: idea.contributor || "",
+              feedback: Number(idea.feedback || 0)
+            });
+          }
+        });
+      });
+      return items;
+    }
+
+    function buildPayload(includePrompt) {
+      const exportedBy = operatorName();
+      return {
+        schema: "operational-movements-dashboard",
+        schemaVersion: "2.0.0",
+        exportedAt: new Date().toISOString(),
+        exportedBy: exportedBy,
+        source: isTauri() ? "OperationalMovements.exe" : "Browser preview",
+        intendedFolderDisplayName: JSON_FOLDER_DISPLAY_NAME,
+        userPathNote: sharePath || "C:\\Users\\Your.User.Name\\OneDrive - USTSA\\FACTTT",
+        goals: collectListItems("goals-list"),
+        objectives: collectListItems("objectives-list"),
+        coreProblem: collectProblems(),
+        movements: {
+          ndo: {
+            label: "NDO Movement",
+            flow: collectFlowDetails("ndo"),
+            ideas: collectTablePayload("ndoIdeas"),
+            actions: collectTasksForPanel("ndo-task-list"),
+            questions: collectQuestionsForPanel("ndo-question-list")
+          },
+          training: {
+            label: "Training Movement",
+            flow: collectFlowDetails("training"),
+            ideas: collectTablePayload("trainingIdeas"),
+            actions: collectTasksForPanel("training-task-list"),
+            questions: collectQuestionsForPanel("training-question-list")
+          },
+          tsst: {
+            label: "TSST-Travel",
+            flow: collectFlowDetails("tsst"),
+            ideas: collectTablePayload("tsstIdeas"),
+            actions: collectTasksForPanel("tsst-task-list"),
+            questions: collectQuestionsForPanel("tsst-question-list")
+          }
+        },
+        sharedNotes: document.getElementById("sharedNotes")?.value || ""
+      };
+    }
+
+    function buildSharePayload() {
+      const base = buildPayload(false);
+      const operator = operatorName();
+      const now = new Date().toISOString();
+      return {
+        version: 1,
+        updatedAt: now,
+        updatedBy: operator,
+        items: flattenItems(base),
+        sharedNotes: base.sharedNotes,
+        meta: { app: APP_TITLE },
+        ...base,
+        exportedAt: now,
+        exportedBy: operator
+      };
+    }
+
+    function collectListItems(listId) {
+      const list = document.getElementById(listId);
+      if (!list) return [];
+      return Array.from(list.querySelectorAll("li")).map(li => {
+        const span = li.querySelector("span[contenteditable], span");
+        const text = (span ? span.innerText : li.innerText).replace("✕", "").trim();
+        return text;
+      }).filter(Boolean);
+    }
+
+    function collectProblems() {
+      return Array.from(document.querySelectorAll(".problem-card")).map((card) => ({
+        title: card.querySelector("strong")?.innerText.trim() || "",
+        body: card.querySelector(".editable-content")?.innerText.trim() || ""
+      }));
+    }
+
+    function applyProblems(problems) {
+      if (!Array.isArray(problems) || problems.length === 0) return;
+      const cards = document.querySelectorAll(".problem-card");
+      problems.forEach((item, index) => {
+        const card = cards[index];
+        if (!card) return;
+        const title = card.querySelector("strong");
+        const body = card.querySelector(".editable-content");
+        if (title && item.title) title.innerText = item.title;
+        if (body && item.body) body.innerText = item.body;
+      });
+    }
+
+    function applyListItems(listId, items) {
+      const list = document.getElementById(listId);
+      if (!list || !Array.isArray(items) || items.length === 0) return;
+      list.innerHTML = "";
+      items.forEach((text) => {
+        list.appendChild(makeEditableListItem(String(text)));
+      });
+    }
+
+    function collectFlowDetails(panelId) {
+      const panel = document.getElementById(panelId);
+      if (!panel) return null;
+      const flowItems = panel.querySelectorAll(".flow-item");
+      if (flowItems.length < 6) return null;
+      return {
+        currentRecipients: Array.from(flowItems[0].querySelectorAll(".tag")).map(t => t.innerText.trim()),
+        teamsNotification: Array.from(flowItems[1].querySelectorAll(".tag")).map(t => t.innerText.trim()),
+        personnel: flowItems[2].querySelector(".editable-content")?.innerText.trim() || "",
+        notificationNeed: flowItems[3].querySelector(".editable-content")?.innerText.trim() || "",
+        movementPath: flowItems[4].querySelector(".editable-content")?.innerText.trim() || "",
+        status: flowItems[5].querySelector(".status-pill")?.innerText.trim() || "Discovery Needed"
+      };
+    }
+
+    function applyFlowDetails(panelId, flowData) {
+      if (!flowData) return;
+      const panel = document.getElementById(panelId);
+      if (!panel) return;
+      const flowItems = panel.querySelectorAll(".flow-item");
+      if (flowItems.length < 6) return;
+
+      if (Array.isArray(flowData.currentRecipients) && flowData.currentRecipients.length > 0) {
+        const container = flowItems[0].querySelector(".tag-list");
+        if (container) {
+          container.innerHTML = flowData.currentRecipients
+            .map(r => `<span class="tag" contenteditable="true">${escapeHtml(r)}</span>`)
+            .join(' ');
         }
       }
-
-      if (cfg.docks && !document.getElementById("team-follow-docks")) {
-        const r = await fetch(cfg.docks);
-        if (r.ok) document.body.insertAdjacentHTML("beforeend", await r.text());
+      if (Array.isArray(flowData.teamsNotification) && flowData.teamsNotification.length > 0) {
+        const container = flowItems[1].querySelector(".tag-list");
+        if (container) {
+          container.innerHTML = flowData.teamsNotification
+            .map(t => `<span class="tag" contenteditable="true">${escapeHtml(t)}</span>`)
+            .join(' ');
+        }
       }
-
-      const mod = await import(new URL(cfg.entry, window.location.href).href);
-      const initFn = mod[cfg.init] || mod.init || mod.initTeamBuilder;
-      if (typeof initFn === "function") initFn(Scheduler);
-      else console.warn(name, "no init");
-    } catch (err) {
-      console.warn("module", name, err);
+      if (flowData.personnel) {
+        const el = flowItems[2].querySelector(".editable-content");
+        if (el) el.innerText = flowData.personnel;
+      }
+      if (flowData.notificationNeed) {
+        const el = flowItems[3].querySelector(".editable-content");
+        if (el) el.innerText = flowData.notificationNeed;
+      }
+      if (flowData.movementPath) {
+        const el = flowItems[4].querySelector(".editable-content");
+        if (el) el.innerText = flowData.movementPath;
+      }
+      if (flowData.status) {
+        const el = flowItems[5].querySelector(".status-pill");
+        if (el) el.innerText = flowData.status;
+      }
     }
-  }
-})();
-</script>
+
+    function collectQuestionsForPanel(listId) {
+      const list = document.getElementById(listId);
+      if (!list) return [];
+      return Array.from(list.querySelectorAll("li span")).map(span => span.innerText.trim()).filter(Boolean);
+    }
+
+    function applyQuestionsForPanel(listId, questions) {
+      const list = document.getElementById(listId);
+      if (!list || !Array.isArray(questions)) return;
+      list.innerHTML = '';
+      questions.forEach(q => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <span contenteditable="true">${escapeHtml(q)}</span>
+          <button type="button" class="item-delete-btn" onclick="deleteItem(this)" title="Delete question">✕</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function collectTablePayload(tableId) {
+      const rows = [];
+      document.querySelectorAll(`#${tableId} tbody tr`).forEach((row, index) => {
+        const cells = row.querySelectorAll("td");
+        rows.push({
+          id: `${tableId}-${index + 1}`,
+          idea: cells[0]?.innerText?.trim() || "",
+          contributor: cells[1]?.innerText?.trim() || "",
+          prosAndConcerns: cells[2]?.innerText?.trim() || "",
+          feedback: Number(cells[3]?.querySelector(".feedback-number")?.textContent || 0),
+          deleted: row.getAttribute('data-deleted') === 'true'
+        });
+      });
+      return rows;
+    }
+
+    function collectTasksForPanel(taskListId) {
+      const taskList = document.getElementById(taskListId);
+      if (!taskList) return [];
+      return Array.from(taskList.querySelectorAll("li")).map((li, index) => {
+        const checkbox = li.querySelector("input[type='checkbox']");
+        const span = li.querySelector("span");
+        return {
+          id: `${taskListId}-task-${index + 1}`,
+          text: span?.innerText.trim() || "",
+          complete: Boolean(checkbox?.checked)
+        };
+      });
+    }
+
+    function isDashboardPopulated(payload) {
+      if (!payload || typeof payload !== "object") return false;
+      const m = payload.movements || {};
+      const flowHasContent = (flow) => {
+        if (!flow || typeof flow !== "object") return false;
+        return Boolean(
+          (flow.personnel && String(flow.personnel).trim()) ||
+          (flow.notificationNeed && String(flow.notificationNeed).trim()) ||
+          (flow.movementPath && String(flow.movementPath).trim()) ||
+          (Array.isArray(flow.currentRecipients) && flow.currentRecipients.length) ||
+          (Array.isArray(flow.teamsNotification) && flow.teamsNotification.length)
+        );
+      };
+      const hasMovementContent = (block) => {
+        if (!block) return false;
+        const ideas = Array.isArray(block.ideas) ? block.ideas.filter((i) => i && i.idea) : [];
+        const actions = Array.isArray(block.actions) ? block.actions.filter((a) => a && (a.text || a)) : [];
+        const questions = Array.isArray(block.questions) ? block.questions.filter(Boolean) : [];
+        return ideas.length > 0 || actions.length > 0 || questions.length > 0 || flowHasContent(block.flow);
+      };
+      return (
+        (Array.isArray(payload.goals) && payload.goals.length > 0) ||
+        (Array.isArray(payload.objectives) && payload.objectives.length > 0) ||
+        (Array.isArray(payload.coreProblem) && payload.coreProblem.length > 0) ||
+        (typeof payload.sharedNotes === "string" && payload.sharedNotes.trim().length > 0) ||
+        hasMovementContent(m.ndo) ||
+        hasMovementContent(m.training) ||
+        hasMovementContent(m.tsst)
+      );
+    }
+
+    function applyDashboardJson(payload) {
+      if (!isValidPayload(payload)) {
+        throw new Error("dashboard.json is missing the operational-movements schema.");
+      }
+      if (!isDashboardPopulated(payload)) {
+        return false;
+      }
+      applyPayloadReplace(payload);
+      updateMetrics();
+      cachePayload();
+      return true;
+    }
+
+    async function refreshFromShare() {
+      try {
+        let payload;
+        if (isTauri()) {
+          payload = await invokeCommand("read_dashboard");
+        } else {
+          const raw = localStorage.getItem(DEMO_DASHBOARD_KEY);
+          payload = raw ? JSON.parse(raw) : null;
+          if (!payload) {
+            showToast("No shared dashboard yet — showing built-in starter content.", "ok");
+            updateMetrics();
+            return;
+          }
+        }
+        const applied = applyDashboardJson(payload);
+        if (applied) {
+          showToast("Refreshed from data/dashboard.json", "ok");
+        } else {
+          showToast("dashboard.json is empty. Keeping the starter content on this page.", "ok");
+          updateMetrics();
+        }
+      } catch (error) {
+        console.error(error);
+        showToast("Refresh failed: " + (error.message || error), "err");
+      }
+    }
+
+    async function saveToInbox() {
+      const payload = buildSharePayload();
+      try {
+        if (isTauri()) {
+          const dash = await invokeCommand("write_dashboard", { payload });
+          const written = await invokeCommand("write_submit", { payload });
+          showToast("Saved to dashboard.json and inbox: " + written, "ok");
+          console.info("Wrote", dash, written);
+        } else {
+          localStorage.setItem(DEMO_DASHBOARD_KEY, JSON.stringify(payload, null, 2));
+          const ts = new Date().toISOString().replace(/[:.]/g, "-");
+          const safe = String(payload.updatedBy || "OPERATOR").replace(/[^a-z0-9\-_]/gi, "_").substring(0, 40);
+          const fake = "C:\\Users\\Preview\\OneDrive - USTSA\\FACTTT\\inbox\\submit-" + ts + "-" + safe + ".json";
+          showToast("Saved. Refresh will keep your edits in this preview.", "ok");
+          console.info(fake);
+        }
+        cachePayload();
+      } catch (error) {
+        console.error(error);
+        cachePayload();
+        showToast("Save failed: " + (error.message || error), "err");
+      }
+    }
+
+    function importJsonPayload() {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "application/json";
+      input.onchange = event => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+          try {
+            const payload = JSON.parse(e.target.result);
+            if (!isValidPayload(payload)) {
+              alert("This file does not appear to be a valid Operational Movements Dashboard payload.");
+              return;
+            }
+            const mode = prompt(
+              "Import mode:\n\nType REPLACE to replace current dashboard data.\nType MERGE to add imported ideas to existing ideas.",
+              "MERGE"
+            );
+            if (!mode) return;
+            const normalizedMode = mode.trim().toUpperCase();
+            if (normalizedMode === "REPLACE") {
+              applyPayloadReplace(payload);
+            } else if (normalizedMode === "MERGE") {
+              applyPayloadMerge(payload);
+            } else {
+              alert("Import canceled. Please enter REPLACE or MERGE.");
+              return;
+            }
+            cachePayload();
+            updateMetrics();
+            alert(
+              "Import complete.\n\n" +
+              "Source: " + (payload.exportedBy || "Unknown") + "\n" +
+              "Exported At: " + (payload.exportedAt || "No timestamp")
+            );
+          } catch (error) {
+            console.error(error);
+            alert("Unable to import JSON. Please confirm the file is valid.");
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }
+
+    function isValidPayload(payload) {
+      if (!payload || typeof payload !== "object") return false;
+      if (
+        payload.movements &&
+        payload.movements.ndo &&
+        payload.movements.training &&
+        payload.movements.tsst
+      ) {
+        return true;
+      }
+      if (payload.schema === "operational-movements-dashboard") return true;
+      if (
+        Number(payload.version) === 1 &&
+        payload.meta &&
+        typeof payload.meta.app === "string"
+      ) {
+        return true;
+      }
+      return false;
+    }
+
+    function applyPayloadReplace(payload) {
+      const movements = payload.movements || {};
+      const ndo = movements.ndo || {};
+      const training = movements.training || {};
+      const tsst = movements.tsst || {};
+
+      if (payload.goals) applyListItems("goals-list", payload.goals);
+      if (payload.objectives) applyListItems("objectives-list", payload.objectives);
+      if (payload.coreProblem) applyProblems(payload.coreProblem);
+
+      if (ndo.flow) applyFlowDetails("ndo", ndo.flow);
+      if (training.flow) applyFlowDetails("training", training.flow);
+      if (tsst.flow) applyFlowDetails("tsst", tsst.flow);
+
+      if (Array.isArray(ndo.ideas)) renderPayloadTable("ndoIdeas", normalizeIdeas(ndo.ideas));
+      if (Array.isArray(training.ideas)) renderPayloadTable("trainingIdeas", normalizeIdeas(training.ideas));
+      if (Array.isArray(tsst.ideas)) renderPayloadTable("tsstIdeas", normalizeIdeas(tsst.ideas));
+
+      if (Array.isArray(ndo.actions)) applyTasksForPanel("ndo-task-list", ndo.actions);
+      if (Array.isArray(training.actions)) applyTasksForPanel("training-task-list", training.actions);
+      if (Array.isArray(tsst.actions)) applyTasksForPanel("tsst-task-list", tsst.actions);
+
+      if (Array.isArray(ndo.questions)) applyQuestionsForPanel("ndo-question-list", ndo.questions);
+      if (Array.isArray(training.questions)) applyQuestionsForPanel("training-question-list", training.questions);
+      if (Array.isArray(tsst.questions)) applyQuestionsForPanel("tsst-question-list", tsst.questions);
+
+      const notes = document.getElementById("sharedNotes");
+      if (notes && typeof payload.sharedNotes === "string") {
+        notes.value = payload.sharedNotes;
+      }
+    }
+
+    function applyPayloadMerge(payload) {
+      const movements = payload.movements || {};
+      appendPayloadIdeas("ndoIdeas", normalizeIdeas((movements.ndo || {}).ideas));
+      appendPayloadIdeas("trainingIdeas", normalizeIdeas((movements.training || {}).ideas));
+      appendPayloadIdeas("tsstIdeas", normalizeIdeas((movements.tsst || {}).ideas));
+      mergeNotes(payload.sharedNotes, payload.exportedBy, payload.exportedAt);
+    }
+
+    function normalizeIdeas(ideas) {
+      if (!Array.isArray(ideas)) return [];
+      return ideas.map(item => ({
+        idea: item.idea || "",
+        contributor: item.contributor || "",
+        prosAndConcerns: item.prosAndConcerns || item.pros || "",
+        feedback: Number(item.feedback || 0),
+        deleted: Boolean(item.deleted)
+      }));
+    }
+
+    function renderPayloadTable(tableId, rows) {
+      const tbody = document.querySelector(`#${tableId} tbody`);
+      if (!tbody) return;
+      tbody.innerHTML = "";
+      rows.forEach(item => {
+        addPayloadIdeaRow(tableId, item);
+      });
+    }
+
+    function appendPayloadIdeas(tableId, rows) {
+      rows.forEach(item => {
+        if (!isDuplicateIdea(tableId, item)) {
+          addPayloadIdeaRow(tableId, item);
+        }
+      });
+    }
+
+    function isDuplicateIdea(tableId, item) {
+      const normalizedIncoming = normalizeText(`${item.idea}|${item.contributor}|${item.prosAndConcerns}`);
+      return Array.from(document.querySelectorAll(`#${tableId} tbody tr`)).some(row => {
+        const cells = row.querySelectorAll("td");
+        const existingText = normalizeText(
+          `${cells[0]?.innerText || ""}|${cells[1]?.innerText || ""}|${cells[2]?.innerText || ""}`
+        );
+        return existingText === normalizedIncoming;
+      });
+    }
+
+    function addPayloadIdeaRow(tableId, item) {
+      const tbody = document.querySelector(`#${tableId} tbody`);
+      if (!tbody) return;
+      const row = document.createElement("tr");
+      if (item.deleted) {
+        row.setAttribute('data-deleted', 'true');
+        row.style.display = 'none';
+      }
+      row.innerHTML = `
+        <td contenteditable="true">${escapeHtml(item.idea || "")}</td>
+        <td contenteditable="true">${escapeHtml(item.contributor || "")}</td>
+        <td contenteditable="true">${escapeHtml(item.prosAndConcerns || "")}</td>
+        <td class="feedback-cell">
+          <div class="feedback-controls">
+            <button type="button" onclick="changeFeedback(this, -1)">−</button>
+            <span class="feedback-number">${Number(item.feedback || 0)}</span>
+            <button type="button" onclick="changeFeedback(this, 1)">+</button>
+          </div>
+        </td>
+        <td><button type="button" class="danger" onclick="deleteIdea(this)">Delete</button></td>
+      `;
+      tbody.appendChild(row);
+    }
+
+    function applyTasksForPanel(taskListId, tasks) {
+      const taskList = document.getElementById(taskListId);
+      if (!taskList || !Array.isArray(tasks)) return;
+      taskList.innerHTML = '';
+      tasks.forEach(task => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <input type="checkbox" onchange="updateProgress()" ${task.complete ? 'checked' : ''}>
+          <span contenteditable="true">${escapeHtml(task.text)}</span>
+          <button type="button" class="item-delete-btn" onclick="deleteAction(this)" title="Delete action item">✕</button>
+        `;
+        if (task.complete) {
+          li.classList.add('task-complete');
+        }
+        taskList.appendChild(li);
+      });
+      updateProgress();
+    }
+
+    function mergeNotes(notes, exportedBy, exportedAt) {
+      if (!notes) return;
+      const notesBox = document.getElementById("sharedNotes");
+      if (!notesBox) return;
+      const divider = `\n\n--- Imported from ${exportedBy || "Unknown"} at ${exportedAt || "unknown time"} ---\n`;
+      notesBox.value = `${notesBox.value || ""}${divider}${notes}`;
+    }
+
+    function resetDashboard() {
+      const confirmed = confirm("Clear the optional local cache on this computer and reload? The shared data/dashboard.json is not deleted.");
+      if (!confirmed) return;
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(DEMO_DASHBOARD_KEY);
+      location.reload();
+    }
+
+    function setHello(name) {
+      const el = document.getElementById("hello-line");
+      if (!el) return;
+      el.textContent = name ? ("Hello, " + name) : "Hello";
+    }
+
+    function setSharePathDisplay(path) {
+      sharePath = path || JSON_FOLDER_DISPLAY_NAME;
+      const a = document.getElementById("share-path-code");
+      const b = document.getElementById("folder-path-code");
+      if (a) a.textContent = sharePath;
+      if (b) b.textContent = sharePath;
+    }
+
+    async function bootShare() {
+      const banner = document.getElementById("preview-banner");
+      if (isTauri()) {
+        if (banner) banner.hidden = true;
+        try {
+          currentOperator = await invokeCommand("get_operator");
+          setHello(currentOperator);
+          try {
+            localStorage.setItem("operational_movements_exported_by", currentOperator);
+          } catch (_err) { /* ignore */ }
+          await invokeCommand("ensure_share_layout");
+          const root = await invokeCommand("shared_folder_path");
+          setSharePathDisplay(root);
+          await refreshFromShare();
+        } catch (error) {
+          console.error(error);
+          setHello(currentOperator || "");
+          showToast("Could not open FACTTT: " + (error.message || error), "err");
+          updateMetrics();
+        }
+      } else {
+        if (banner) banner.hidden = false;
+        setHello("");
+        setSharePathDisplay(JSON_FOLDER_DISPLAY_NAME);
+        const raw = localStorage.getItem(DEMO_DASHBOARD_KEY) || localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          try {
+            applyDashboardJson(JSON.parse(raw));
+          } catch (error) {
+            console.error(error);
+            updateMetrics();
+          }
+        } else {
+          updateMetrics();
+        }
+      }
+    }
+
+    function normalizeText(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, " ");
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    document.addEventListener("input", event => {
+      if (
+        event.target.matches("td[contenteditable='true']") ||
+        event.target.matches("span[contenteditable='true']") ||
+        event.target.matches("li[contenteditable='true']") ||
+        event.target.matches(".editable-content") ||
+        event.target.matches("strong[contenteditable='true']") ||
+        event.target.matches(".tag[contenteditable='true']") ||
+        event.target.matches(".status-pill[contenteditable='true']") ||
+        event.target.matches("#sharedNotes")
+      ) {
+        updateMetrics();
+        cachePayload();
+      }
+    });
+
+    document.addEventListener("change", event => {
+      if (event.target.matches('.task-list input[type="checkbox"]')) {
+        updateProgress();
+      }
+    });
+
+    function bindUiEvents() {
+      if (document.body.dataset.eventsBound === "true") {
+        return;
+      }
+      document.body.dataset.eventsBound = "true";
+      document.addEventListener("click", event => {
+        const target = event.target.closest("[data-action]");
+        if (!target) {
+          return;
+        }
+        const action = target.dataset.action;
+        switch (action) {
+          case "refresh":
+            refreshFromShare();
+            break;
+          case "save":
+            saveToInbox();
+            break;
+          case "print":
+            window.print();
+            break;
+          case "toggle-more":
+            toggleMoreActions();
+            break;
+          case "reset":
+            resetDashboard();
+            break;
+          default:
+            console.warn("Unknown UI action:", action);
+        }
+      });
+    }
+
+    function initializeUi() {
+      bindUiEvents();
+      decorateEditableList("goals-list");
+      decorateEditableList("objectives-list");
+      updateMetrics();
+      bootShare().catch(error => {
+        console.error("Share initialization failed:", error);
+        showToast(
+          "Shared-folder initialization failed. The dashboard remains editable.",
+          "err"
+        );
+      });
+    }
+
+    window.addEventListener("error", event => {
+      console.error(
+        "Unhandled application error:",
+        event.error || event.message
+      );
+      showToast(
+        "Application error: " +
+          (event.message || "Unknown JavaScript error"),
+        "err"
+      );
+    });
+    window.addEventListener("unhandledrejection", event => {
+      console.error(
+        "Unhandled promise rejection:",
+        event.reason
+      );
+      showToast(
+        "Application operation failed. See the console for details.",
+        "err"
+      );
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      initializeUi();
+    });
+  </script>
 </body>
 </html>
