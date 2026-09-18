@@ -4,6 +4,7 @@
   "description": "Main window can call FACTTT share commands",
   "windows": ["main"],
   "permissions": [
-    "core:default"
+    "core:default",
+    "allow-facttt-commands"
   ]
 }

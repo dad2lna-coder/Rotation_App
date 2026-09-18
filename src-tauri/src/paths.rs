@@ -219,6 +219,29 @@ pub fn iso_ts_now() -> String {
     chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true)
 }
 
+pub fn write_dashboard_at(app_root: &Path, mut payload: Value) -> Result<PathBuf, String> {
+    ensure_share_layout_at(app_root)?;
+    let operator = payload
+        .get("updatedBy")
+        .or_else(|| payload.get("exportedBy"))
+        .and_then(|v| v.as_str())
+        .filter(|s| !s.is_empty())
+        .map(|s| s.to_string())
+        .unwrap_or_else(get_operator);
+    let now = iso_ts_now();
+    payload["updatedBy"] = json!(operator);
+    payload["exportedBy"] = json!(operator);
+    payload["updatedAt"] = json!(now);
+    payload["exportedAt"] = json!(now);
+    payload["version"] = json!(1);
+    if payload.get("schema").is_none() {
+        payload["schema"] = json!("operational-movements-dashboard");
+    }
+    let dest = dashboard_path(app_root);
+    write_json_atomic(&dest, &payload)?;
+    Ok(dest)
+}
+
 pub fn write_submit_at(app_root: &Path, mut payload: Value) -> Result<PathBuf, String> {
     ensure_share_layout_at(app_root)?;
     let operator = payload
@@ -342,6 +365,29 @@ mod tests {
         let after = fs::read_to_string(dashboard_path(&root)).unwrap();
         assert_eq!(original, after, "dashboard.json must be unchanged on submit");
         assert!(!name.contains("master"));
+    }
+
+    #[test]
+    fn write_dashboard_replaces_share_file() {
+        let root = temp_root().join("FACTTT");
+        ensure_share_layout_at(&root).unwrap();
+        let dest = write_dashboard_at(
+            &root,
+            json!({
+                "schema": "operational-movements-dashboard",
+                "sharedNotes": "persisted note",
+                "updatedBy": "Jane Doe",
+                "goals": ["Keep the dashboard editable"]
+            }),
+        )
+        .unwrap();
+        assert_eq!(dest, dashboard_path(&root));
+        let parsed: Value =
+            serde_json::from_str(&fs::read_to_string(&dest).unwrap()).unwrap();
+        assert_eq!(parsed["sharedNotes"], "persisted note");
+        assert_eq!(parsed["updatedBy"], "Jane Doe");
+        assert_eq!(parsed["goals"][0], "Keep the dashboard editable");
+        assert!(parsed.get("master").is_none());
     }
 
     #[test]

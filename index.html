@@ -335,14 +335,19 @@
       color: #111827;
       font-weight: 800;
     }
-    td[contenteditable="true"], span[contenteditable="true"], li[contenteditable="true"] {
+    td[contenteditable="true"], span[contenteditable="true"], li[contenteditable="true"],
+    .editable-content, strong[contenteditable="true"], .status-pill[contenteditable="true"],
+    .tag[contenteditable="true"] {
       outline: none;
+      cursor: text;
       transition: background 0.15s ease, box-shadow 0.15s ease;
     }
-    td[contenteditable="true"]:hover, span[contenteditable="true"]:hover, li[contenteditable="true"]:hover {
+    td[contenteditable="true"]:hover, span[contenteditable="true"]:hover, li[contenteditable="true"]:hover,
+    .editable-content:hover, strong[contenteditable="true"]:hover {
       background: rgba(29, 78, 216, 0.04);
     }
-    td[contenteditable="true"]:focus, span[contenteditable="true"]:focus, li[contenteditable="true"]:focus {
+    td[contenteditable="true"]:focus, span[contenteditable="true"]:focus, li[contenteditable="true"]:focus,
+    .editable-content:focus, strong[contenteditable="true"]:focus {
       background: #eff6ff !important;
       box-shadow: inset 0 0 0 2px var(--primary);
     }
@@ -355,6 +360,38 @@
       padding: 3px 6px;
       border-radius: 6px;
       cursor: text;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .editable-bullet-list li span[contenteditable="true"] {
+      flex: 1;
+    }
+    .add-list-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      align-items: center;
+    }
+    .add-list-form input {
+      flex: 1;
+      min-width: 180px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
+    .edit-hint {
+      margin: 12px 0 0;
+      padding: 10px 12px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      color: #1e3a8a;
+      font-size: 0.92rem;
+      line-height: 1.45;
     }
     .feedback-cell {
       text-align: center;
@@ -616,6 +653,38 @@
         grid-template-columns: 1fr;
       }
     }
+    html {
+      overflow-x: hidden;
+    }
+    @media (max-width: 640px) {
+      header {
+        padding: 18px 14px;
+      }
+      header h1 {
+        font-size: 1.35rem;
+      }
+      header p {
+        font-size: 0.92rem;
+      }
+      .container {
+        padding: 12px;
+      }
+      .top-actions,
+      .section,
+      .metric-card {
+        padding: 14px;
+      }
+      button,
+      .tab-button,
+      .link-button {
+        min-height: 44px;
+        padding: 10px 14px;
+      }
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
   </style>
 </head>
 <body>
@@ -647,8 +716,15 @@
         <strong>Source of truth:</strong> <code>data/dashboard.json</code> in the FACTTT share.
         <br />
         <strong>Refresh</strong> loads that file. <strong>Save</strong> writes
+        <code>data/dashboard.json</code> (so your edits stick) and
         <code>inbox/submit-<timestamp>-<operator>.json</code>
-        for Power Automate to merge. The app never writes a file named master.
+        for Power Automate. The app never writes a file named master.
+        <p class="edit-hint">
+          Click any highlighted field to type. Use <strong>Add Goal</strong>,
+          <strong>Add Idea</strong>, <strong>Add Question</strong>, and
+          <strong>Add Action</strong> in each section. Use ✕ or Delete to remove a row.
+          Then click <strong>Save</strong>.
+        </p>
         <br /><br />
         Path for this PC:
         <br />
@@ -686,17 +762,16 @@
       <h2>📌 Core Problem</h2>
       <div class="problem-list">
         <div class="problem-card">
-          <strong>Current Process</strong>
-          Manual email forwards.
+          <strong contenteditable="true">Current Process</strong>
+          <div class="editable-content" contenteditable="true">Manual email forwards.</div>
         </div>
         <div class="problem-card">
-          <strong>The Gap</strong>
-          Not everyone gets the memo. Key operational teams lack visibility on who is gone,
-          where they are, and when they will return.
+          <strong contenteditable="true">The Gap</strong>
+          <div class="editable-content" contenteditable="true">Not everyone gets the memo. Key operational teams lack visibility on who is gone, where they are, and when they will return.</div>
         </div>
         <div class="problem-card">
-          <strong>Target Audience</strong>
-          Scheduling, Payroll, Coordination Center, TSMs, Finance, Training, and Senior Management.
+          <strong contenteditable="true">Target Audience</strong>
+          <div class="editable-content" contenteditable="true">Scheduling, Payroll, Coordination Center, TSMs, Finance, Training, and Senior Management.</div>
         </div>
       </div>
     </section>
@@ -714,6 +789,10 @@
                 <li contenteditable="true">Ensure impacted teams receive timely, accurate information.</li>
                 <li contenteditable="true">Create a repeatable notification model for future movement types.</li>
               </ul>
+              <div class="add-list-form">
+                <input type="text" id="newGoal" placeholder="Enter a new goal" />
+                <button type="button" id="add-goal-btn" onclick="addListItem('goals-list','newGoal','Goal')">Add Goal</button>
+              </div>
             </div>
             <div>
               <h3>Objectives</h3>
@@ -724,7 +803,10 @@
                 <li contenteditable="true">Determine advance notice requirements by team.</li>
                 <li contenteditable="true">Identify automation opportunities using distribution lists, forms, or Power Automate.</li>
               </ul>
-            </div>
+              <div class="add-list-form">
+                <input type="text" id="newObjective" placeholder="Enter a new objective" />
+                <button type="button" id="add-objective-btn" onclick="addListItem('objectives-list','newObjective','Objective')">Add Objective</button>
+              </div>
           </div>
       </div>
     </section>
@@ -831,7 +913,7 @@
             <label for="ndoIdeaPros">Pros and Concerns</label>
             <input type="text" id="ndoIdeaPros" placeholder="Benefits, risks, concerns" />
           </div>
-          <button onclick="addIdea('ndoIdeas','ndoIdeaText','ndoIdeaHow','ndoIdeaPros')">Add Idea</button>
+          <button type="button" id="ndo-add-idea-btn" onclick="addIdea('ndoIdeas','ndoIdeaText','ndoIdeaHow','ndoIdeaPros')">Add Idea</button>
         </div>
 
         <h3>Discussion Questions</h3>
@@ -1263,7 +1345,7 @@
           <li>Open OperationalMovements.exe from <strong>OneDrive - USTSA\\FACTTT</strong>.</li>
           <li>The app greets you and Refresh-loads <code>data/dashboard.json</code>.</li>
           <li>Edit ideas, actions, questions, and notes.</li>
-          <li>Select <strong>Save</strong>. A submit file is written to <code>inbox/</code>.</li>
+          <li>Select <strong>Save</strong>. That updates <code>data/dashboard.json</code> and writes a copy to <code>inbox/</code>.</li>
           <li>Power Automate merges that file into <code>data/dashboard.json</code>, posts Teams, and moves it to <code>archive/</code>.</li>
           <li>Select <strong>Refresh</strong> later to pick up merges from other operators.</li>
         </ol>
@@ -1328,7 +1410,9 @@
 
     function cachePayload() {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(buildPayload(false)));
+        const json = JSON.stringify(buildSharePayload());
+        localStorage.setItem(STORAGE_KEY, json);
+        localStorage.setItem(DEMO_DASHBOARD_KEY, json);
       } catch (error) {
         console.error("Optional cache skipped.", error);
       }
@@ -1400,6 +1484,7 @@
       prosInput.value = "";
       updateMetrics();
       cachePayload();
+      showToast("Idea added. Click Save to write it to FACTTT.", "ok");
     }
 
     function deleteIdea(button) {
@@ -1409,7 +1494,47 @@
         row.style.display = 'none';
         updateMetrics();
         cachePayload();
+        showToast("Idea removed. Click Save to write the change.", "ok");
       }
+    }
+
+    function addListItem(listId, inputId, kind) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const text = input.value.trim();
+      if (!text) {
+        showToast("Please enter a " + String(kind || "item").toLowerCase() + " first.", "err");
+        return;
+      }
+      const list = document.getElementById(listId);
+      if (!list) return;
+      list.appendChild(makeEditableListItem(text));
+      input.value = "";
+      cachePayload();
+      showToast((kind || "Item") + " added. Click Save to write it to FACTTT.", "ok");
+    }
+
+    function makeEditableListItem(text) {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <span contenteditable="true">${escapeHtml(text)}</span>
+        <button type="button" class="item-delete-btn" onclick="deleteItem(this)" title="Delete">✕</button>
+      `;
+      return li;
+    }
+
+    function decorateEditableList(listId) {
+      const list = document.getElementById(listId);
+      if (!list) return;
+      Array.from(list.querySelectorAll("li")).forEach((li) => {
+        if (li.querySelector(".item-delete-btn")) return;
+        const text = li.innerText.trim();
+        li.removeAttribute("contenteditable");
+        li.innerHTML = `
+          <span contenteditable="true">${escapeHtml(text)}</span>
+          <button type="button" class="item-delete-btn" onclick="deleteItem(this)" title="Delete">✕</button>
+        `;
+      });
     }
 
     function addAction(taskListId, inputId) {
@@ -1431,6 +1556,7 @@
       input.value = '';
       updateProgress();
       cachePayload();
+      showToast("Action added. Click Save to write it to FACTTT.", "ok");
     }
 
     function deleteAction(button) {
@@ -1439,6 +1565,7 @@
         li.remove();
         updateProgress();
         cachePayload();
+        showToast("Action removed. Click Save to write the change.", "ok");
       }
     }
 
@@ -1459,6 +1586,7 @@
       list.appendChild(li);
       input.value = '';
       cachePayload();
+      showToast("Question added. Click Save to write it to FACTTT.", "ok");
     }
 
     function deleteItem(button) {
@@ -1466,6 +1594,7 @@
       if (li) {
         li.remove();
         cachePayload();
+        showToast("Removed. Click Save to write the change.", "ok");
       }
     }
 
@@ -1532,6 +1661,7 @@
         userPathNote: sharePath || "C:\\Users\\Your.User.Name\\OneDrive - USTSA\\FACTTT",
         goals: collectListItems("goals-list"),
         objectives: collectListItems("objectives-list"),
+        coreProblem: collectProblems(),
         movements: {
           ndo: {
             label: "NDO Movement",
@@ -1579,13 +1709,40 @@
     function collectListItems(listId) {
       const list = document.getElementById(listId);
       if (!list) return [];
-      return Array.from(list.querySelectorAll("li")).map(li => li.innerText.trim()).filter(Boolean);
+      return Array.from(list.querySelectorAll("li")).map(li => {
+        const span = li.querySelector("span[contenteditable], span");
+        const text = (span ? span.innerText : li.innerText).replace("✕", "").trim();
+        return text;
+      }).filter(Boolean);
+    }
+
+    function collectProblems() {
+      return Array.from(document.querySelectorAll(".problem-card")).map((card) => ({
+        title: card.querySelector("strong")?.innerText.trim() || "",
+        body: card.querySelector(".editable-content")?.innerText.trim() || ""
+      }));
+    }
+
+    function applyProblems(problems) {
+      if (!Array.isArray(problems) || problems.length === 0) return;
+      const cards = document.querySelectorAll(".problem-card");
+      problems.forEach((item, index) => {
+        const card = cards[index];
+        if (!card) return;
+        const title = card.querySelector("strong");
+        const body = card.querySelector(".editable-content");
+        if (title && item.title) title.innerText = item.title;
+        if (body && item.body) body.innerText = item.body;
+      });
     }
 
     function applyListItems(listId, items) {
       const list = document.getElementById(listId);
       if (!list || !Array.isArray(items) || items.length === 0) return;
-      list.innerHTML = items.map(text => `<li contenteditable="true">${escapeHtml(text)}</li>`).join('');
+      list.innerHTML = "";
+      items.forEach((text) => {
+        list.appendChild(makeEditableListItem(String(text)));
+      });
     }
 
     function collectFlowDetails(panelId) {
@@ -1695,18 +1852,29 @@
     }
 
     function isDashboardPopulated(payload) {
-      if (!payload || !payload.movements) return false;
-      const m = payload.movements;
+      if (!payload || typeof payload !== "object") return false;
+      const m = payload.movements || {};
+      const flowHasContent = (flow) => {
+        if (!flow || typeof flow !== "object") return false;
+        return Boolean(
+          (flow.personnel && String(flow.personnel).trim()) ||
+          (flow.notificationNeed && String(flow.notificationNeed).trim()) ||
+          (flow.movementPath && String(flow.movementPath).trim()) ||
+          (Array.isArray(flow.currentRecipients) && flow.currentRecipients.length) ||
+          (Array.isArray(flow.teamsNotification) && flow.teamsNotification.length)
+        );
+      };
       const hasMovementContent = (block) => {
         if (!block) return false;
         const ideas = Array.isArray(block.ideas) ? block.ideas.filter((i) => i && i.idea) : [];
-        const actions = Array.isArray(block.actions) ? block.actions : [];
-        const questions = Array.isArray(block.questions) ? block.questions : [];
-        return ideas.length > 0 || actions.length > 0 || questions.length > 0 || Boolean(block.flow);
+        const actions = Array.isArray(block.actions) ? block.actions.filter((a) => a && (a.text || a)) : [];
+        const questions = Array.isArray(block.questions) ? block.questions.filter(Boolean) : [];
+        return ideas.length > 0 || actions.length > 0 || questions.length > 0 || flowHasContent(block.flow);
       };
       return (
         (Array.isArray(payload.goals) && payload.goals.length > 0) ||
         (Array.isArray(payload.objectives) && payload.objectives.length > 0) ||
+        (Array.isArray(payload.coreProblem) && payload.coreProblem.length > 0) ||
         (typeof payload.sharedNotes === "string" && payload.sharedNotes.trim().length > 0) ||
         hasMovementContent(m.ndo) ||
         hasMovementContent(m.training) ||
@@ -1758,18 +1926,22 @@
       const payload = buildSharePayload();
       try {
         if (isTauri()) {
+          const dash = await invokeCommand("write_dashboard", { payload });
           const written = await invokeCommand("write_submit", { payload });
-          showToast("Saved to " + written, "ok");
+          showToast("Saved to dashboard.json and inbox: " + written, "ok");
+          console.info("Wrote", dash, written);
         } else {
           localStorage.setItem(DEMO_DASHBOARD_KEY, JSON.stringify(payload, null, 2));
           const ts = new Date().toISOString().replace(/[:.]/g, "-");
           const safe = String(payload.updatedBy || "OPERATOR").replace(/[^a-z0-9\-_]/gi, "_").substring(0, 40);
           const fake = "C:\\Users\\Preview\\OneDrive - USTSA\\FACTTT\\inbox\\submit-" + ts + "-" + safe + ".json";
-          showToast("Saved (preview) to " + fake, "ok");
+          showToast("Saved. Refresh will keep your edits in this preview.", "ok");
+          console.info(fake);
         }
         cachePayload();
       } catch (error) {
         console.error(error);
+        cachePayload();
         showToast("Save failed: " + (error.message || error), "err");
       }
     }
@@ -1842,35 +2014,42 @@
     }
 
     function applyPayloadReplace(payload) {
+      const movements = payload.movements || {};
+      const ndo = movements.ndo || {};
+      const training = movements.training || {};
+      const tsst = movements.tsst || {};
+
       if (payload.goals) applyListItems("goals-list", payload.goals);
       if (payload.objectives) applyListItems("objectives-list", payload.objectives);
+      if (payload.coreProblem) applyProblems(payload.coreProblem);
 
-      if (payload.movements.ndo.flow) applyFlowDetails("ndo", payload.movements.ndo.flow);
-      if (payload.movements.training.flow) applyFlowDetails("training", payload.movements.training.flow);
-      if (payload.movements.tsst.flow) applyFlowDetails("tsst", payload.movements.tsst.flow);
+      if (ndo.flow) applyFlowDetails("ndo", ndo.flow);
+      if (training.flow) applyFlowDetails("training", training.flow);
+      if (tsst.flow) applyFlowDetails("tsst", tsst.flow);
 
-      renderPayloadTable("ndoIdeas", normalizeIdeas(payload.movements.ndo.ideas));
-      renderPayloadTable("trainingIdeas", normalizeIdeas(payload.movements.training.ideas));
-      renderPayloadTable("tsstIdeas", normalizeIdeas(payload.movements.tsst.ideas));
+      if (Array.isArray(ndo.ideas)) renderPayloadTable("ndoIdeas", normalizeIdeas(ndo.ideas));
+      if (Array.isArray(training.ideas)) renderPayloadTable("trainingIdeas", normalizeIdeas(training.ideas));
+      if (Array.isArray(tsst.ideas)) renderPayloadTable("tsstIdeas", normalizeIdeas(tsst.ideas));
 
-      applyTasksForPanel("ndo-task-list", payload.movements.ndo.actions || []);
-      applyTasksForPanel("training-task-list", payload.movements.training.actions || []);
-      applyTasksForPanel("tsst-task-list", payload.movements.tsst.actions || []);
+      if (Array.isArray(ndo.actions)) applyTasksForPanel("ndo-task-list", ndo.actions);
+      if (Array.isArray(training.actions)) applyTasksForPanel("training-task-list", training.actions);
+      if (Array.isArray(tsst.actions)) applyTasksForPanel("tsst-task-list", tsst.actions);
 
-      if (payload.movements.ndo.questions) applyQuestionsForPanel("ndo-question-list", payload.movements.ndo.questions);
-      if (payload.movements.training.questions) applyQuestionsForPanel("training-question-list", payload.movements.training.questions);
-      if (payload.movements.tsst.questions) applyQuestionsForPanel("tsst-question-list", payload.movements.tsst.questions);
+      if (Array.isArray(ndo.questions)) applyQuestionsForPanel("ndo-question-list", ndo.questions);
+      if (Array.isArray(training.questions)) applyQuestionsForPanel("training-question-list", training.questions);
+      if (Array.isArray(tsst.questions)) applyQuestionsForPanel("tsst-question-list", tsst.questions);
 
       const notes = document.getElementById("sharedNotes");
-      if (notes) {
-        notes.value = payload.sharedNotes || "";
+      if (notes && typeof payload.sharedNotes === "string") {
+        notes.value = payload.sharedNotes;
       }
     }
 
     function applyPayloadMerge(payload) {
-      appendPayloadIdeas("ndoIdeas", normalizeIdeas(payload.movements.ndo.ideas));
-      appendPayloadIdeas("trainingIdeas", normalizeIdeas(payload.movements.training.ideas));
-      appendPayloadIdeas("tsstIdeas", normalizeIdeas(payload.movements.tsst.ideas));
+      const movements = payload.movements || {};
+      appendPayloadIdeas("ndoIdeas", normalizeIdeas((movements.ndo || {}).ideas));
+      appendPayloadIdeas("trainingIdeas", normalizeIdeas((movements.training || {}).ideas));
+      appendPayloadIdeas("tsstIdeas", normalizeIdeas((movements.tsst || {}).ideas));
       mergeNotes(payload.sharedNotes, payload.exportedBy, payload.exportedAt);
     }
 
@@ -1987,6 +2166,11 @@
     }
 
     async function bootShare() {
+      document.querySelectorAll("button").forEach((btn) => {
+        if (!btn.getAttribute("type")) btn.setAttribute("type", "button");
+      });
+      decorateEditableList("goals-list");
+      decorateEditableList("objectives-list");
       const banner = document.getElementById("preview-banner");
       if (isTauri()) {
         if (banner) banner.hidden = true;
@@ -2010,7 +2194,7 @@
         if (banner) banner.hidden = false;
         setHello("");
         setSharePathDisplay(JSON_FOLDER_DISPLAY_NAME);
-        const raw = localStorage.getItem(DEMO_DASHBOARD_KEY);
+        const raw = localStorage.getItem(DEMO_DASHBOARD_KEY) || localStorage.getItem(STORAGE_KEY);
         if (raw) {
           try {
             applyDashboardJson(JSON.parse(raw));
@@ -2046,6 +2230,9 @@
         event.target.matches("span[contenteditable='true']") ||
         event.target.matches("li[contenteditable='true']") ||
         event.target.matches(".editable-content") ||
+        event.target.matches("strong[contenteditable='true']") ||
+        event.target.matches(".tag[contenteditable='true']") ||
+        event.target.matches(".status-pill[contenteditable='true']") ||
         event.target.matches("#sharedNotes")
       ) {
         updateMetrics();

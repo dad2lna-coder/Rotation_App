@@ -1,0 +1,11 @@
+[[permission]]
+identifier = "allow-facttt-commands"
+description = "Allow FACTTT dashboard disk commands from the main window"
+commands.allow = [
+  "get_operator",
+  "shared_folder_path",
+  "ensure_share_layout",
+  "read_dashboard",
+  "write_submit",
+  "write_dashboard"
+]

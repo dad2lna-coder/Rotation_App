@@ -20,6 +20,7 @@ pub fn run() {
             commands::ensure_share_layout,
             commands::read_dashboard,
             commands::write_submit,
+            commands::write_dashboard,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Operational Movements");

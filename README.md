@@ -36,7 +36,7 @@ On first launch the app creates `data/`, `inbox/`, `archive/`, and — if it is 
 | Button | Effect |
 |---|---|
 | **Refresh** | Reads `data/dashboard.json` and loads the UI. Also runs automatically when the exe starts. |
-| **Save** | Writes the current UI (plus Windows username + timestamp) to `inbox/submit-<ISO_TS>-<operator>.json`. Does **not** rewrite `data/dashboard.json`. |
+| **Save** | Writes the current UI to **`data/dashboard.json`** (so Refresh/reopen keep your edits) **and** to `inbox/submit-<ISO_TS>-<operator>.json` for Power Automate. |
 | **Import file…** | One-off merge/replace from a local JSON file (under More). |
 | **Print / Save as PDF** | Browser print dialog. |
 
@@ -49,7 +49,7 @@ Source of truth is `data/dashboard.json`. Browser localStorage is only an option
 When a file is **created** in `FACTTT\inbox\`:
 
 1. Parse the JSON
-2. Merge into `FACTTT\data\dashboard.json` (one writer — Automate — so OneDrive does not fork conflicting copies)
+2. Merge into `FACTTT\data\dashboard.json` if you want a server-side merge (the app also writes `dashboard.json` on Save so the file is usable without Automate)
 3. Post a Teams message (who saved, when, short summary)
 4. Move the submit file to `FACTTT\archive\`
 

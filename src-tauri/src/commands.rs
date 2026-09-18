@@ -30,3 +30,10 @@ pub fn write_submit(payload: Value) -> Result<String, String> {
     let path = paths::write_submit_at(&root, payload)?;
     Ok(path.to_string_lossy().to_string())
 }
+
+#[tauri::command]
+pub fn write_dashboard(payload: Value) -> Result<String, String> {
+    let root = paths::find_app_root()?;
+    let path = paths::write_dashboard_at(&root, payload)?;
+    Ok(path.to_string_lossy().to_string())
+}
