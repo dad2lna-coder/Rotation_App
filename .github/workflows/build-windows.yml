@@ -34,7 +34,7 @@ jobs:
           workspaces: src-tauri -> target
 
       - name: Decode app icons
-        run: node scripts/decode-
+        run: node scripts/decode-icons.js
 
       - name: Test path helpers
         working-directory: src-tauri
