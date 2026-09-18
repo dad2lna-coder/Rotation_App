@@ -34,10 +34,7 @@ jobs:
           workspaces: src-tauri -> target
 
       - name: Decode app icons
-        run: node scripts/decode-icons.js
-
-      - name: Install frontend deps
-        run: npm install
+        run: node scripts/decode-
 
       - name: Test path helpers
         working-directory: src-tauri
