@@ -1,8 +1,8 @@
-import { state, setHello, setSharePathDisplay, refreshFromShare, saveToInbox } from './stores/state.js';
+import { state, setHello, setSharePathDisplay, refreshFromShare, saveToInbox, initializeUi } from './stores/state.js';
 import { isValidPayload, EMPTY_PAYLOAD } from './data/schema.js';
 import { migrateToV3 } from './data/migrations.js';
 import { importJsonPayload } from './actions/data.js';
-import { renderInitiativeList, renderInitiativeEditor, addInitiative, deleteInitiative, addSection, saveCurrentInitiative } from './components/initiative.js';
+import { renderInitiativeList, renderInitiativeEditor, addInitiative, deleteInitiative, addSection, saveCurrentInitiative, openInitiativeEditor } from './components/initiative.js';
 import { showToast } from './utils/ui.js';
 import { isTauri, invokeCommand } from './utils/tauri.js';
 
@@ -21,7 +21,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       setSharePathDisplay(path);
     } else {
       setHello(null);
+      const banner = document.getElementById('preview-banner');
+      if (banner) banner.hidden = false;
     }
+    initializeUi();
     const payload = await refreshFromShare();
     const migrated = migrateToV3(payload ?? EMPTY_PAYLOAD);
     state.setCurrentPayload(migrated);
@@ -37,9 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('add-initiative-btn')?.addEventListener('click', () => {
     const payload = state.getCurrentPayload();
-    const newInit = addInitiative(payload);
-    renderInitiativeList(payload);
-    openInitiativeEditor(newInit.id, payload);
+    addInitiative(payload);
   });
 
   document.getElementById('back-to-list-btn')?.addEventListener('click', () => {

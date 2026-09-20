@@ -1,5 +1,4 @@
 import { escapeHtml } from "../utils/strings.js";
-import { getCurrentPayload } from "../stores/state.js";
 
 function normalizeIdeas(ideas) {
   if (!Array.isArray(ideas)) return [];
