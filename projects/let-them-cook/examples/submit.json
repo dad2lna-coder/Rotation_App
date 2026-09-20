@@ -1,0 +1,32 @@
+{
+  "schema": "let-them-cook-dashboard",
+  "schemaVersion": "2.0.0",
+  "exportedAt": "2026-09-19T00:00:00Z",
+  "exportedBy": "Operator",
+  "source": "LetThemCook.exe",
+  "intendedFolderDisplayName": "OneDrive - USTSA\\FACTTT",
+  "version": 1,
+  "updatedAt": "2026-09-19T00:00:00Z",
+  "updatedBy": "Operator",
+  "sharedNotes": "Sample inbox submit for Power Automate.",
+  "initiatives": [
+    {
+      "id": "1",
+      "templateId": "default",
+      "name": "Sample Initiative",
+      "status": "active",
+      "owner": "Operator",
+      "startDate": "2026-09-19",
+      "sections": [
+        {
+          "id": "sec-1",
+          "type": "discovery",
+          "name": "Discovery",
+          "ideas": [],
+          "actions": [],
+          "questions": []
+        }
+      ]
+    }
+  ]
+}

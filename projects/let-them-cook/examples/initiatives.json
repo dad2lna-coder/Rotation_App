@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "updatedAt": null,
+  "updatedBy": null,
+  "items": [],
+  "sharedNotes": "",
+  "meta": {
+    "app": "Let Them Cook"
+  },
+  "schema": "let-them-cook-dashboard",
+  "schemaVersion": "2.0.0",
+  "exportedAt": null,
+  "exportedBy": null,
+  "source": "LetThemCook.exe",
+  "intendedFolderDisplayName": "OneDrive - USTSA\\FACTTT",
+  "initiatives": []
+}

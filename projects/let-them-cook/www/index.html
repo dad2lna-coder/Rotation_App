@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Let Them Cook</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <p id="hello-line" class="hello-line">Hello</p>
+    <h1>Let Them Cook</h1>
+    <p>
+      A collaborative workspace to map notification flows, reduce communication gaps,
+      and improve operational visibility when team members move out of the operation.
+    </p>
+    <p class="share-status">Shared folder: <code id="share-path-code">OneDrive - USTSA\FACTTT</code></p>
+    <p id="preview-banner" class="preview-banner" hidden>
+      Browser preview — Refresh / Save use a local demo store. The Windows exe writes to OneDrive FACTTT.
+    </p>
+  </header>
+
+  <main class="container">
+    <!-- Initiative Management -->
+    <section class="initiative-manager">
+      <h2>Initiatives</h2>
+      <div class="initiative-list" id="initiative-list">
+        <!-- Dynamically populated -->
+      </div>
+      <div class="initiative-controls">
+        <button type="button" class="secondary" id="add-initiative-btn">+ Add Initiative</button>
+      </div>
+    </section>
+
+    <!-- Initiative Editor -->
+    <section class="initiative-editor" id="initiative-editor" hidden>
+      <h3 id="editor-title">Initiative Editor</h3>
+      <div class="editor-controls">
+        <button type="button" class="secondary" id="back-to-list-btn">← Back to List</button>
+        <button type="button" class="warning" id="delete-initiative-btn" hidden>Delete Initiative</button>
+      </div>
+
+      <div class="initiative-properties">
+        <h4>Properties</h4>
+        <div class="property-row">
+          <label>Name:</label>
+          <input type="text" id="initiative-name" placeholder="Initiative name" />
+        </div>
+        <div class="property-row">
+          <label>Status:</label>
+          <select id="initiative-status">
+            <option value="active">Active</option>
+            <option value="planning">Planning</option>
+            <option value="paused">Paused</option>
+          </select>
+        </div>
+        <div class="property-row">
+          <label>Owner:</label>
+          <input type="text" id="initiative-owner" placeholder="Owner name" />
+        </div>
+        <div class="property-row">
+          <label>Start Date:</label>
+          <input type="date" id="initiative-start-date" />
+        </div>
+      </div>
+
+      <!-- Sections will be added here dynamically -->
+      <div class="sections-container" id="sections-container">
+        <!-- Dynamically populated -->
+      </div>
+
+      <div class="editor-actions">
+        <button type="button" class="secondary" id="add-section-btn">+ Add Section</button>
+        <button type="button" class="success" id="save-initiative-btn">Save Initiative</button>
+      </div>
+    </section>
+
+    <!-- Existing dashboard metrics (unchanged) -->
+    <section class="dashboard-grid">
+      <div class="metric-card">
+        <h3>Initiatives Count</h3>
+        <div class="value" id="initiativeCount">0</div>
+        <div class="sub">Total initiatives</div>
+      </div>
+      <div class="metric-card">
+        <h3>Total Ideas</h3>
+        <div class="value" id="ideaCount">0</div>
+        <div class="sub">Across all initiatives</div>
+      </div>
+      <div class="metric-card">
+        <h3>Action Progress</h3>
+        <div class="value" id="progressValue">0%</div>
+        <div class="sub">Completed discovery actions</div>
+        <div class="progress-wrap">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <h3>Teams Impacted</h3>
+        <div class="value">8</div>
+        <div class="sub">Scheduling, Payroll, CC, TSMs, Finance, Training, FSD, Sr. Management</div>
+      </div>
+    </section>
+
+    <!-- Problem section (unchanged) -->
+    <section class="section">
+      <h2>📋 Core Problems</h2>
+      <div class="problem-list" id="core-problems-list">
+        <!-- Dynamically populated -->
+      </div>
+      <div class="add-problem-form">
+        <input type="text" id="newProblemTitle" placeholder="Problem title" />
+        <textarea id="newProblemBody" placeholder="Problem description"></textarea>
+        <button type="button" id="add-problem-btn">Add Problem</button>
+      </div>
+    </section>
+
+    <!-- Existing dashboard sections (unchanged) -->
+    <section class="section">
+      <h2>📝 Shared Notes</h2>
+      <p class="small-muted">
+        Use this section during working sessions to capture decisions, open questions, or follow-up items.
+        Notes are included when you Save to inbox.
+      </p>
+      <textarea id="sharedNotes" class="notes-area" placeholder="Enter shared notes here..."></textarea>
+      <div class="instruction-box">
+        <h3>Daily workflow</h3>
+        <ol>
+          <li>Open LetThemCook.exe from <strong>OneDrive - USTSA\\FACTTT</strong>.</li>
+          <li>The app greets you and Refresh-loads <code>data/initiatives.json</code>.</li>
+          <li>Edit ideas, actions, questions, and notes.</li>
+          <li>Select <strong>Save</strong>. That updates <code>data/initiatives.json</code> and writes a copy to <code>inbox/</code>.</li>
+          <li>Power Automate merges that file into <code>data/initiatives.json</code>, posts Teams, and moves it to <code>archive/</code>.</li>
+          <li>Select <strong>Refresh</strong> later to pick up merges from other operators.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>🚦 Recommended Next Steps</h2>
+      <ol>
+        <li>Confirm the upstream sender for each initiative.</li>
+        <li>Confirm the correct distribution list or mailbox for each impacted team.</li>
+        <li>Agree on mandatory notification fields.</li>
+        <li>Decide whether each initiative needs individual notice, weekly rollup, or both.</li>
+        <li>Build a standard notification template or form.</li>
+        <li>Evaluate Power Automate for routing, logging, and calendar visibility.</li>
+      </ol>
+    </section>
+
+    <div class="footer-note">
+      Let Them Cook. Shared source of truth is data/initiatives.json in FACTTT.
+    </div>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="js/init.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "let-them-cook",
+  "private": true,
+  "version": "2.0.0",
+  "description": "Let Them Cook — workplace improvement initiative tracker for OneDrive FACTTT",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "build:nsis": "tauri build --bundles nsis"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}
