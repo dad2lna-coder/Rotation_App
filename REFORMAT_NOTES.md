@@ -67,10 +67,10 @@
 - Ensured all IDs match JS references
 
 ## Verification
-- `cd projects/let-them-cook && for f in js/**/*.js; do node --check "$f"; done`  # All pass
-- `cd projects/let-them-cook/src-tauri && cargo test`  # Rust tests pass
-- `cd projects/let-them-cook && npm install`  # Dependencies installed
-- `cd projects/let-them-cook && node scripts/prepare-frontend.js`  # Frontend staged successfully
+- `cd . && for f in js/**/*.js; do node --check "$f"; done`  # All pass
+- `cd /src-tauri && cargo test`  # Rust tests pass
+- `cd . && npm install`  # Dependencies installed
+- `cd . && node scripts/prepare-frontend.js`  # Frontend staged successfully
 
 ## Notes
 - Vanilla JS modules, no Svelte/Vite
