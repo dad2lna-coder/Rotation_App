@@ -1,0 +1,45 @@
+name: Build Let Them Cook EXE
+
+on:
+  push:
+    branches: [let-them-cook]
+  pull_request:
+    branches: [let-them-cook]
+  workflow_dispatch:
+
+jobs:
+  build-exe:
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Decode icons
+        run: node scripts/decode-icons.js
+
+      - name: Prepare frontend
+        run: node scripts/prepare-frontend.js
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Build Tauri
+        run: npm run tauri -- build
+
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LetThemCook.exe
+          path: src-tauri/target/release/LetThemCook.exe
