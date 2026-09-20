@@ -11,6 +11,26 @@ window.importJsonPayload = importJsonPayload;
 window.refreshFromShare = refreshFromShare;
 window.saveToInbox = saveToInbox;
 
+import {
+  addIdea,
+  addQuestion,
+  addAction,
+  deleteIdea,
+  deleteItem,
+  deleteAction,
+  changeFeedback,
+  updateProgress
+} from './actions/editor.js';
+
+window.addIdea = addIdea;
+window.addQuestion = addQuestion;
+window.addAction = addAction;
+window.deleteIdea = deleteIdea;
+window.deleteItem = deleteItem;
+window.deleteAction = deleteAction;
+window.changeFeedback = changeFeedback;
+window.updateProgress = updateProgress;
+
 // Boot
 document.addEventListener('DOMContentLoaded', async () => {
   try {
