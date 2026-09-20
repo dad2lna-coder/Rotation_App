@@ -184,13 +184,24 @@ export async function refreshFromShare() {
       payload = await invokeCommand("read_dashboard");
     } else {
       const raw = localStorage.getItem(DEMO_DASHBOARD_KEY);
-      payload = raw ? JSON.parse(raw) : null;
-      if (!payload) {
+      let cached = null;
+      try {
+        cached = raw ? JSON.parse(raw) : null;
+      } catch {
+        cached = null;
+      }
+      const hasInitiatives =
+        cached &&
+        Array.isArray(cached.initiatives) &&
+        cached.initiatives.length > 0;
+
+      if (!hasInitiatives) {
         const starter = buildDemoStarterPayload();
         localStorage.setItem(DEMO_DASHBOARD_KEY, JSON.stringify(starter));
         payload = starter;
         showToast("Browser preview — loaded demo initiatives.", "ok");
       } else {
+        payload = cached;
         showToast("Refreshed from browser demo store.", "ok");
       }
     }
@@ -200,6 +211,9 @@ export async function refreshFromShare() {
     if (typeof renderInitiativeList === "function") renderInitiativeList(migrated);
     updateMetrics();
     cachePayload();
+    if (!isTauri()) {
+      return migrated;
+    }
     showToast("Refreshed from data/initiatives.json", "ok");
     return migrated;
   } catch (error) {
