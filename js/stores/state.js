@@ -3,6 +3,7 @@ import { escapeHtml, normalizeText } from "../utils/strings.js";
 import { getTauriInvoke, isTauri, invokeCommand } from "../utils/tauri.js";
 import { showToast, toggleMoreActions } from "../utils/ui.js";
 import { collectSectionPayload } from "../data/store.js";
+import { EMPTY_PAYLOAD } from "../data/schema.js";
 
 export const STORAGE_KEY = "let_them_cook_initiatives_facttt_v2";
 export const DEMO_DASHBOARD_KEY = "ltc_preview_initiatives_json";
@@ -17,6 +18,7 @@ let currentPayload = null;
 
 export { escapeHtml, normalizeText };
 export { showToast, toggleMoreActions };
+export { EMPTY_PAYLOAD };
 
 export function setCurrentPayload(payload) {
   currentPayload = payload;
@@ -185,8 +187,7 @@ export async function refreshFromShare() {
       payload = raw ? JSON.parse(raw) : null;
       if (!payload) {
         showToast("No shared dashboard yet — showing built-in starter content.", "ok");
-        updateMetrics();
-        return;
+        return EMPTY_PAYLOAD;
       }
     }
     const migrated = migrateToV3(payload);
@@ -196,6 +197,7 @@ export async function refreshFromShare() {
     updateMetrics();
     cachePayload();
     showToast("Refreshed from data/initiatives.json", "ok");
+    return migrated;
   } catch (error) {
     console.error(error);
     showToast("Refresh failed: " + (error.message || error), "err");
