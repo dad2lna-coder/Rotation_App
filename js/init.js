@@ -1,9 +1,10 @@
-import { state } from '../stores/state.js';
-import { isValidPayload, EMPTY_PAYLOAD } from '../data/schema.js';
-import { migrateToV3 } from '../data/migrations.js';
-import { refreshFromShare, saveToInbox, importJsonPayload } from './actions/data.js';
-import { renderInitiativeList, renderInitiativeEditor, addInitiative, deleteInitiative, addSection, saveCurrentInitiative } from '../components/initiative.js';
-import { showToast } from '../utils/ui.js';
+import { state, setHello, setSharePathDisplay, refreshFromShare, saveToInbox } from './stores/state.js';
+import { isValidPayload, EMPTY_PAYLOAD } from './data/schema.js';
+import { migrateToV3 } from './data/migrations.js';
+import { importJsonPayload } from './actions/data.js';
+import { renderInitiativeList, renderInitiativeEditor, addInitiative, deleteInitiative, addSection, saveCurrentInitiative } from './components/initiative.js';
+import { showToast } from './utils/ui.js';
+import { isTauri, invokeCommand } from './utils/tauri.js';
 
 // Re-expose action functions globally for inline handlers and data-action wiring
 window.importJsonPayload = importJsonPayload;
@@ -13,6 +14,14 @@ window.saveToInbox = saveToInbox;
 // Boot
 document.addEventListener('DOMContentLoaded', async () => {
   try {
+    if (isTauri()) {
+      const name = await invokeCommand('get_operator');
+      setHello(name || null);
+      const path = await invokeCommand('shared_folder_path');
+      setSharePathDisplay(path);
+    } else {
+      setHello(null);
+    }
     const payload = await refreshFromShare();
     const migrated = migrateToV3(payload ?? EMPTY_PAYLOAD);
     state.setCurrentPayload(migrated);
