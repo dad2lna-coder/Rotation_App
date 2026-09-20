@@ -6,7 +6,7 @@ Portable Windows app (Tauri v2) for the FACTTT shared folder. The dashboard UI i
 
 **Frontend:** Vanilla JS modules (ES modules), no framework. Copy-only Tauri build.
 **Backend:** Rust/Tauri v2 with 6 commands.
-**Shared folder:** `data/initiatives.json` (never named master).
+**Shared folder:** `data/initiatives.json` .
 
 ### Directory structure
 ```text
@@ -39,7 +39,7 @@ Portable Windows app (Tauri v2) for the FACTTT shared folder. The dashboard UI i
 ## Shared folder layout
 
 ```text
-OneDrive - USTSA\
+OneDrive - ######\
   FACTTT\
     LetThemCook.exe      ← portable; double-click, no install
     data\
@@ -52,7 +52,7 @@ OneDrive - USTSA\
 Discovery order:
 1. `FACTTT_ROOT` env var
 2. Running exe under `FACTTT/`
-3. `OneDrive - USTSA\FACTTT` (created if missing)
+3. `OneDrive - ####%\FACTTT` (created if missing)
 
 ## Buttons
 
