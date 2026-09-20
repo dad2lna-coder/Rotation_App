@@ -219,4 +219,18 @@ function updateMetrics() {
   cachePayload();
 }
 
-export { normalizeIdeas, collectTablePayload, collectTasksForPanel, collectQuestionsForPanel, collectFlowDetails, applyFlowDetails, addPayloadIdeaRow, renderPayloadTable, renderPayloadTableFromIdeas, applyTasksForPanel, applyQuestionsForPanel, applyProblems, applyListItems, makeEditableListItem, collectListItems, updateProgress, updateMetrics, initProgress };
+function collectSectionPayload(sectionId) {
+  if (!sectionId) return null;
+  const sectionEl = document.querySelector(`.section-editor[data-id="${sectionId}"]`);
+  return {
+    id: sectionId,
+    type: sectionEl?.dataset?.type || "discovery",
+    name: sectionEl?.querySelector(".section-name")?.value?.trim() || "Section",
+    ideas: collectTablePayload(sectionId + "-ideas"),
+    actions: collectTasksForPanel(sectionId + "-task-list"),
+    questions: collectQuestionsForPanel(sectionId + "-question-list"),
+    flow: collectFlowDetails(sectionId)
+  };
+}
+
+export { normalizeIdeas, collectTablePayload, collectTasksForPanel, collectQuestionsForPanel, collectFlowDetails, collectSectionPayload, applyFlowDetails, addPayloadIdeaRow, renderPayloadTable, renderPayloadTableFromIdeas, applyTasksForPanel, applyQuestionsForPanel, applyProblems, applyListItems, makeEditableListItem, collectListItems, updateProgress, updateMetrics, initProgress };
