@@ -1,7 +1,26 @@
-// js/pages/problems.js — Let Them Cook v4
-
 import { state } from "../stores/state.js";
 import { escapeHtml } from "../utils/strings.js";
+
+function getProblemEditor() {
+  return document.getElementById("problem-editor");
+}
+
+function getProblemList() {
+  const listSection = document.getElementById("page-problems");
+  return listSection ? listSection.querySelector(".problem-list") : null;
+}
+
+function getProblemForm() {
+  return {
+    title: document.getElementById("problem-title")?.value.trim() || "",
+    body: document.getElementById("problem-body")?.value.trim() || "",
+    priority: document.getElementById("problem-priority")?.value || "medium"
+  };
+}
+
+function validateProblemForm(form) {
+  return !!(form.title && form.body);
+}
 
 export function renderProblemsPage(payload) {
   const listContainer = document.getElementById("problems-list");
@@ -32,7 +51,7 @@ export function renderProblemsPage(payload) {
 }
 
 export function showProblemEditor(problemId = null) {
-  const editor = document.getElementById("problem-editor");
+  const editor = getProblemEditor();
   const listSection = document.getElementById("page-problems");
   if (!editor || !listSection) return;
   listSection.querySelector(".problem-list").style.display = "none";
@@ -46,6 +65,7 @@ export function showProblemEditor(problemId = null) {
   if (titleInput) titleInput.value = "";
   if (bodyInput) bodyInput.value = "";
   if (prioritySelect) prioritySelect.value = "medium";
+  const deleteBtn = editor.querySelector('[data-action="delete-problem"]');
   if (problemId) {
     const payload = state.getCurrentPayload();
     const problem = (payload?.problems || []).find(p => p.id === problemId);
@@ -53,17 +73,15 @@ export function showProblemEditor(problemId = null) {
       if (titleInput) titleInput.value = problem.title || "";
       if (bodyInput) bodyInput.value = problem.body || "";
       if (prioritySelect) prioritySelect.value = problem.priority || "medium";
-      const deleteBtn = editor.querySelector('[data-action="delete-problem"]');
       if (deleteBtn) { deleteBtn.dataset.id = problemId; deleteBtn.style.display = "inline-block"; }
     }
-  } else {
-    const deleteBtn = editor.querySelector('[data-action="delete-problem"]');
-    if (deleteBtn) deleteBtn.style.display = "none";
+  } else if (deleteBtn) {
+    deleteBtn.style.display = "none";
   }
 }
 
 export function hideProblemEditor() {
-  const editor = document.getElementById("problem-editor");
+  const editor = getProblemEditor();
   const listSection = document.getElementById("page-problems");
   if (!editor || !listSection) return;
   editor.hidden = true;
@@ -72,14 +90,45 @@ export function hideProblemEditor() {
 }
 
 export function collectProblemForm() {
-  const titleInput = document.getElementById("problem-title");
-  const bodyInput = document.getElementById("problem-body");
-  const prioritySelect = document.getElementById("problem-priority");
-  return {
-    id: Date.now().toString(),
-    title: titleInput ? titleInput.value.trim() : "",
-    body: bodyInput ? bodyInput.value.trim() : "",
-    priority: prioritySelect ? prioritySelect.value : "medium",
-    createdAt: new Date().toISOString()
-  };
+  return getProblemForm();
+}
+
+export function editProblem(id) {
+  showProblemEditor(id);
+}
+
+export function saveProblem() {
+  const payload = state.getCurrentPayload();
+  if (!payload) return;
+  if (!Array.isArray(payload.problems)) payload.problems = [];
+  const form = getProblemForm();
+  if (!validateProblemForm(form)) return;
+  const deleteBtn = getProblemEditor()?.querySelector('[data-action="delete-problem"]');
+  const editingId = deleteBtn?.dataset?.id || null;
+  const now = new Date().toISOString();
+  if (editingId) {
+    const idx = payload.problems.findIndex(p => p.id === editingId);
+    if (idx !== -1) {
+      payload.problems[idx] = { ...payload.problems[idx], title: form.title, body: form.body, priority: form.priority, updatedAt: now };
+    }
+  } else {
+    payload.problems.push({ id: `prob-${Date.now()}`, ...form, createdAt: now });
+  }
+  state.setCurrentPayload(payload);
+  hideProblemEditor();
+  renderProblemsPage(payload);
+  try { if (typeof state.cachePayload === "function") state.cachePayload(); } catch (_) { /* ignore cache failure */ }
+}
+
+export function deleteProblem(id) {
+  const payload = state.getCurrentPayload();
+  if (!payload) return;
+  if (!confirm("Delete this problem? This cannot be undone.")) return;
+  payload.problems = (payload.problems || []).filter(p => p.id !== id);
+  state.setCurrentPayload(payload);
+  const editor = getProblemEditor();
+  const deleteBtn = editor?.querySelector('[data-action="delete-problem"]');
+  if (deleteBtn?.dataset?.id === id) hideProblemEditor();
+  renderProblemsPage(payload);
+  try { if (typeof state.cachePayload === "function") state.cachePayload(); } catch (_) { /* ignore cache failure */ }
 }

@@ -548,6 +548,51 @@
       width: 100%;
       min-height: 150px;
     }
+    /* Notes threading */
+    .notes-thread {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .note {
+      background: var(--panel-soft);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+    }
+    .note.reply {
+      margin-left: 24px;
+      border-left: 3px solid var(--primary);
+      background: var(--primary-soft);
+    }
+    .note-header {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 6px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .note-author { font-weight: 700; color: var(--text); }
+    .note-date { white-space: nowrap; }
+    .note-body {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .note-replies {
+      margin-top: 8px;
+      padding-left: 8px;
+      border-left: 2px dashed var(--border);
+    }
+    .note-reply-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .note-reply-input {
+      min-height: 60px;
+    }
 
     .hello-line {
       margin: 0 0 8px;

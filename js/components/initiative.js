@@ -235,6 +235,15 @@ export function saveCurrentInitiative(payload) {
   state.cachePayload();
 }
 
+export function backToInitiativesList() {
+  state.setCurrentInitiativeId(null);
+  const listView = document.getElementById('initiative-list-view');
+  const detailView = document.getElementById('initiative-detail-view');
+  if (listView) listView.hidden = false;
+  if (detailView) detailView.hidden = true;
+  renderInitiativeList(state.getCurrentPayload());
+}
+
 // Collect notes from a notes panel DOM element
 function collectNotesForSection(notesListId) {
   const list = document.getElementById(notesListId);
@@ -274,4 +283,4 @@ function collectNotesForSection(notesListId) {
   return notes;
 }
 
-export { collectTablePayload, collectTasksForPanel, collectQuestionsForPanel, collectFlowDetails };
+export { collectTablePayload, collectTasksForPanel, collectQuestionsForPanel, collectFlowDetails, collectNotesForSection };

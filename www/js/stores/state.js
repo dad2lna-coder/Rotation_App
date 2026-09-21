@@ -6,9 +6,10 @@ import { collectSectionPayload } from "../data/store.js";
 import { EMPTY_PAYLOAD, buildDemoStarterPayload, isValidPayload } from "../data/schema.js";
 import { migrateToV4 } from "../data/migrations.js";
 import { renderDashboard } from "../pages/dashboard.js";
-import { renderProblemsPage } from "../pages/problems.js";
+import { renderProblemsPage, showProblemEditor, hideProblemEditor, saveProblem, deleteProblem, editProblem } from "../pages/problems.js";
 import { renderAnalytics } from "../pages/analytics.js";
-import { renderInitiativeList, openInitiativeEditor } from "../components/initiative.js";
+import { renderInitiativeList, openInitiativeEditor, addInitiative, deleteInitiative, saveCurrentInitiative, backToInitiativesList } from "../components/initiative.js";
+import { addRootNote, replyToNote, saveReply } from "../components/notes.js";
 
 export const STORAGE_KEY = "let_them_cook_initiatives_facttt_v4";
 export const DEMO_DASHBOARD_KEY = "ltc_preview_initiatives_json";
@@ -73,10 +74,15 @@ export function buildSharePayload() {
 }
 
 function collectInitiatives() {
-  const initiatives = (currentPayload?.initiatives || []).map(init => ({
-    ...init,
-    sections: (init.sections || []).map(section => ({ ...section }))
-  }));
+  const initiatives = (currentPayload?.initiatives || []).map(init => {
+    const { owner, ...rest } = init;
+    return {
+      ...rest,
+      status: rest.status || "New",
+      notes: Array.isArray(rest.notes) ? [...rest.notes] : [],
+      sections: (rest.sections || []).map(section => ({ ...section }))
+    };
+  });
   const current = initiatives.find(init => init.id === currentInitiativeId);
   if (!current) return initiatives;
 
@@ -157,6 +163,9 @@ export function bindUiEvents() {
       case "back-initiatives": backToInitiativesList(); break;
       case "delete-initiative": deleteInitiative(target.dataset.id); break;
       case "open-initiative": openInitiativeEditor(target.dataset.id); break;
+      case "add-note": addRootNote(); break;
+      case "reply-note": replyToNote(target.dataset.id); break;
+      case "save-reply": saveReply(target.dataset.id); break;
       default: console.warn("Unknown UI action:", action);
     }
   });

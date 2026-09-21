@@ -6,8 +6,9 @@ import { renderInitiativeList, openInitiativeEditor, addInitiative, deleteInitia
 import { showToast } from './utils/ui.js';
 import { isTauri, invokeCommand } from './utils/tauri.js';
 import { renderDashboard } from './pages/dashboard.js';
-import { renderProblemsPage, showProblemEditor, hideProblemEditor } from './pages/problems.js';
+import { renderProblemsPage, showProblemEditor, hideProblemEditor, editProblem, deleteProblem, saveProblem } from './pages/problems.js';
 import { renderAnalytics } from './pages/analytics.js';
+import { addRootNote, replyToNote, saveReply } from './components/notes.js';
 
 // Re-expose action functions globally for inline handlers
 window.importJsonPayload = importJsonPayload;
@@ -35,6 +36,12 @@ window.updateProgress = updateProgress;
 window.openInitiativeEditor = openInitiativeEditor;
 window.addInitiative = addInitiative;
 window.deleteInitiative = deleteInitiative;
+window.editProblem = editProblem;
+window.deleteProblem = deleteProblem;
+window.saveProblem = saveProblem;
+window.addRootNote = addRootNote;
+window.replyToNote = replyToNote;
+window.saveReply = saveReply;
 
 // Boot
 document.addEventListener('DOMContentLoaded', async () => {
