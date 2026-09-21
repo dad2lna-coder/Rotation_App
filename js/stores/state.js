@@ -6,9 +6,10 @@ import { collectSectionPayload } from "../data/store.js";
 import { EMPTY_PAYLOAD, buildDemoStarterPayload, isValidPayload } from "../data/schema.js";
 import { migrateToV4 } from "../data/migrations.js";
 import { renderDashboard } from "../pages/dashboard.js";
-import { renderProblemsPage } from "../pages/problems.js";
+import { renderProblemsPage, showProblemEditor, hideProblemEditor, saveProblem, deleteProblem, editProblem } from "../pages/problems.js";
 import { renderAnalytics } from "../pages/analytics.js";
-import { renderInitiativeList, openInitiativeEditor } from "../components/initiative.js";
+import { renderInitiativeList, openInitiativeEditor, addInitiative, deleteInitiative as deleteInitiativeById, saveCurrentInitiative, backToInitiativesList } from "../components/initiative.js";
+import { addRootNote, replyToNote, saveReply } from "../components/notes.js";
 
 export const STORAGE_KEY = "let_them_cook_initiatives_facttt_v4";
 export const DEMO_DASHBOARD_KEY = "ltc_preview_initiatives_json";
