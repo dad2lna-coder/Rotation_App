@@ -7,159 +7,219 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <header>
-    <p id="hello-line" class="hello-line">Hello</p>
-    <h1>Let Them Cook</h1>
-    <p>
-      A collaborative workspace to map notification flows, reduce communication gaps,
-      and improve operational visibility when team members move out of the operation.
-    </p>
-    <p class="share-status">Shared folder: <code id="share-path-code">OneDrive - USTSA\FACTTT</code></p>
-    <p class="toolbar">
-      <button type="button" class="secondary" data-action="refresh">Refresh</button>
-      <button type="button" class="success" data-action="save">Save</button>
-      <button type="button" class="secondary" data-action="reset">Reset demo cache</button>
-    </p>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-lockup">
+        <div class="brand-mark" aria-hidden="true">LTC</div>
+        <div>
+          <h1>Let Them Cook</h1>
+          <p class="tagline">A shared workspace for operational improvements.</p>
+        </div>
+      </div>
+      <div class="header-meta">
+        <p id="hello-line" class="hello-line">Hello</p>
+        <p class="share-status">Shared folder: <code id="share-path-code">OneDrive - USTSA\FACTTT</code></p>
+      </div>
+    </div>
+    <div class="shell-toolbar">
+      <nav class="top-tabs" aria-label="Primary navigation">
+        <button type="button" class="tab-button active" data-tab="dashboard" data-action="tab">Dashboard</button>
+        <button type="button" class="tab-button" data-tab="problems" data-action="tab">Problems</button>
+        <button type="button" class="tab-button" data-tab="initiatives" data-action="tab">Initiatives</button>
+        <button type="button" class="tab-button" data-tab="analytics" data-action="tab">Analytics</button>
+      </nav>
+      <div class="toolbar-actions">
+        <button type="button" class="secondary" data-action="refresh">Refresh</button>
+        <button type="button" class="success" data-action="save">Save</button>
+        <button type="button" class="quiet" data-action="reset">Reset demo cache</button>
+      </div>
+    </div>
     <p id="preview-banner" class="preview-banner" hidden>
       Browser preview — Refresh / Save use a local demo store. The Windows exe writes to OneDrive FACTTT.
     </p>
   </header>
 
   <main class="container">
-    <!-- Initiative Management -->
-    <section class="initiative-manager">
-      <h2>Initiatives</h2>
-      <div class="initiative-list" id="initiative-list">
-        <!-- Dynamically populated -->
-      </div>
-      <div class="initiative-controls">
-        <button type="button" class="secondary" id="add-initiative-btn">+ Add Initiative</button>
-      </div>
-    </section>
-
-    <!-- Initiative Editor -->
-    <section class="initiative-editor" id="initiative-editor" hidden>
-      <h3 id="editor-title">Initiative Editor</h3>
-      <div class="editor-controls">
-        <button type="button" class="secondary" id="back-to-list-btn">← Back to List</button>
-        <button type="button" class="warning" id="delete-initiative-btn" hidden>Delete Initiative</button>
-      </div>
-
-      <div class="initiative-properties">
-        <h4>Properties</h4>
-        <div class="property-row">
-          <label>Name:</label>
-          <input type="text" id="initiative-name" placeholder="Initiative name" />
-        </div>
-        <div class="property-row">
-          <label>Status:</label>
-          <select id="initiative-status">
-            <option value="active">Active</option>
-            <option value="planning">Planning</option>
-            <option value="paused">Paused</option>
-          </select>
-        </div>
-        <div class="property-row">
-          <label>Owner:</label>
-          <input type="text" id="initiative-owner" placeholder="Owner name" />
-        </div>
-        <div class="property-row">
-          <label>Start Date:</label>
-          <input type="date" id="initiative-start-date" />
+    <section id="page-dashboard" class="page active" aria-labelledby="dashboard-title">
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">Home</p>
+          <h2 id="dashboard-title">Dashboard</h2>
+          <p>See the work in motion, then jump into the problems and initiatives that need attention.</p>
         </div>
       </div>
 
-      <!-- Sections will be added here dynamically -->
-      <div class="sections-container" id="sections-container">
-        <!-- Dynamically populated -->
-      </div>
-
-      <div class="editor-actions">
-        <button type="button" class="secondary" id="add-section-btn">+ Add Section</button>
-        <button type="button" class="success" id="save-initiative-btn">Save Initiative</button>
-      </div>
-    </section>
-
-    <!-- Existing dashboard metrics (unchanged) -->
-    <section class="dashboard-grid">
-      <div class="metric-card">
-        <h3>Initiatives Count</h3>
-        <div class="value" id="initiativeCount">0</div>
-        <div class="sub">Total initiatives</div>
-      </div>
-      <div class="metric-card">
-        <h3>Total Ideas</h3>
-        <div class="value" id="ideaCount">0</div>
-        <div class="sub">Across all initiatives</div>
-      </div>
-      <div class="metric-card">
-        <h3>Action Progress</h3>
-        <div class="value" id="progressValue">0%</div>
-        <div class="sub">Completed discovery actions</div>
-        <div class="progress-wrap">
-          <div class="progress-bar" id="progressBar"></div>
+      <div class="metrics-strip" id="dashboard-metrics">
+        <div class="metric-card">
+          <span class="metric-label">Initiatives</span>
+          <span class="metric-value" id="initiativeCount">0</span>
+          <span class="metric-detail">Active and planned</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Ideas</span>
+          <span class="metric-value" id="ideaCount">0</span>
+          <span class="metric-detail">Across all initiatives</span>
+        </div>
+        <div class="metric-card metric-card-wide">
+          <span class="metric-label">Action progress</span>
+          <span class="metric-value" id="progressValue">0%</span>
+          <span class="metric-detail">Completed discovery actions</span>
+          <span class="progress-wrap"><span class="progress-bar" id="progressBar"></span></span>
         </div>
       </div>
-      <div class="metric-card">
-        <h3>Teams Impacted</h3>
-        <div class="value">8</div>
-        <div class="sub">Scheduling, Payroll, CC, TSMs, Finance, Training, FSD, Sr. Management</div>
+
+      <div class="dashboard-grid">
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Focus</p>
+              <h3>Core Problems</h3>
+            </div>
+            <button type="button" class="text-button" data-tab="problems" data-action="tab">View all</button>
+          </div>
+          <div id="dashboard-problems" class="compact-list"></div>
+          <button type="button" class="secondary full-width" data-action="add-problem">+ Add problem</button>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Workspace</p>
+              <h3>Initiatives</h3>
+            </div>
+            <button type="button" class="text-button" data-tab="initiatives" data-action="tab">Open workspace</button>
+          </div>
+          <div id="dashboard-initiatives" class="initiative-grid"></div>
+          <button type="button" class="secondary full-width" data-action="add-initiative">+ New initiative</button>
+        </section>
       </div>
     </section>
 
-    <!-- Problem section (unchanged) -->
-    <section class="section">
-      <h2>📋 Core Problems</h2>
-      <div class="problem-list" id="core-problems-list">
-        <!-- Dynamically populated -->
+    <section id="page-problems" class="page" aria-labelledby="problems-title" hidden>
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">Discovery</p>
+          <h2 id="problems-title">Problems</h2>
+          <p>Capture the gaps that make movement, communication, and handoffs harder than they need to be.</p>
+        </div>
+        <button type="button" class="success" data-action="add-problem">+ Add problem</button>
       </div>
-      <div class="add-problem-form">
-        <input type="text" id="newProblemTitle" placeholder="Problem title" />
-        <textarea id="newProblemBody" placeholder="Problem description"></textarea>
-        <button type="button" id="add-problem-btn">Add Problem</button>
+      <div id="problems-list" class="problem-list"></div>
+      <div id="problem-editor" class="panel problem-editor" hidden>
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Problem detail</p>
+            <h3 id="problem-editor-title">Edit problem</h3>
+          </div>
+          <button type="button" class="quiet" data-action="cancel-problem">Cancel</button>
+        </div>
+        <input id="problem-title" class="field" type="text" placeholder="Problem title" />
+        <textarea id="problem-body" class="field textarea" placeholder="Describe the problem and why it matters"></textarea>
+        <label class="field-label" for="problem-priority">Priority</label>
+        <select id="problem-priority" class="field">
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+        <div class="button-row">
+          <button type="button" class="success" data-action="save-problem">Save problem</button>
+          <button type="button" class="danger" data-action="delete-problem">Delete problem</button>
+        </div>
       </div>
     </section>
 
-    <!-- Existing dashboard sections (unchanged) -->
-    <section class="section">
-      <h2>📝 Shared Notes</h2>
-      <p class="small-muted">
-        Use this section during working sessions to capture decisions, open questions, or follow-up items.
-        Notes are included when you Save to inbox.
-      </p>
-      <textarea id="sharedNotes" class="notes-area" placeholder="Enter shared notes here..."></textarea>
-      <div class="instruction-box">
-        <h3>Daily workflow</h3>
-        <ol>
-          <li>Open LetThemCook.exe from <strong>OneDrive - USTSA\\FACTTT</strong>.</li>
-          <li>The app greets you and Refresh-loads <code>data/initiatives.json</code>.</li>
-          <li>Edit ideas, actions, questions, and notes.</li>
-          <li>Select <strong>Save</strong>. That updates <code>data/initiatives.json</code> and writes a copy to <code>inbox/</code>.</li>
-          <li>Power Automate merges that file into <code>data/initiatives.json</code>, posts Teams, and moves it to <code>archive/</code>.</li>
-          <li>Select <strong>Refresh</strong> later to pick up merges from other operators.</li>
-        </ol>
+    <section id="page-initiatives" class="page" aria-labelledby="initiatives-title" hidden>
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">Workspace</p>
+          <h2 id="initiatives-title">Initiatives</h2>
+          <p>Turn the gaps into a plan, keep the discussion visible, and track the next action.</p>
+        </div>
+        <button type="button" class="success" data-action="add-initiative">+ New initiative</button>
+      </div>
+
+      <div id="initiative-list-view" class="initiative-list-view">
+        <div id="initiative-list" class="initiative-grid"></div>
+      </div>
+
+      <div id="initiative-detail-view" class="initiative-detail-view" hidden>
+        <div class="detail-toolbar">
+          <button type="button" class="secondary" data-action="back-initiatives">← Back to initiatives</button>
+          <span class="detail-kicker">Initiative workspace</span>
+        </div>
+        <div class="panel initiative-detail">
+          <div class="detail-heading">
+            <div>
+              <p class="eyebrow">Initiative</p>
+              <h3 id="initiative-detail-title">Initiative detail</h3>
+            </div>
+            <div class="button-row">
+              <button type="button" class="danger" data-action="delete-initiative">Delete</button>
+              <button type="button" class="success" data-action="save-initiative">Save initiative</button>
+            </div>
+          </div>
+          <div class="initiative-properties">
+            <label class="field-label" for="initiative-name">Name</label>
+            <input id="initiative-name" class="field" type="text" placeholder="Initiative name" />
+            <div class="property-grid">
+              <div>
+                <label class="field-label" for="initiative-status">Status</label>
+                <select id="initiative-status" class="field">
+                  <option value="New">New</option>
+                  <option value="Planning">Planning</option>
+                  <option value="Active">Active</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label" for="initiative-start-date">Start date</label>
+                <input id="initiative-start-date" class="field" type="date" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="sections-container" class="sections-container"></div>
       </div>
     </section>
 
-    <section class="section">
-      <h2>🚦 Recommended Next Steps</h2>
-      <ol>
-        <li>Confirm the upstream sender for each initiative.</li>
-        <li>Confirm the correct distribution list or mailbox for each impacted team.</li>
-        <li>Agree on mandatory notification fields.</li>
-        <li>Decide whether each initiative needs individual notice, weekly rollup, or both.</li>
-        <li>Build a standard notification template or form.</li>
-        <li>Evaluate Power Automate for routing, logging, and calendar visibility.</li>
-      </ol>
+    <section id="page-analytics" class="page" aria-labelledby="analytics-title" hidden>
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">Signal</p>
+          <h2 id="analytics-title">Analytics</h2>
+          <p>A quick read on the shape of the work. Charts can come later; the counts stay useful now.</p>
+        </div>
+      </div>
+      <div class="analytics-grid">
+        <div class="panel analytics-card">
+          <p class="eyebrow">Initiatives</p>
+          <strong id="analytics-initiatives">0</strong>
+          <span>Total initiatives</span>
+        </div>
+        <div class="panel analytics-card">
+          <p class="eyebrow">Ideas</p>
+          <strong id="analytics-ideas">0</strong>
+          <span>Total ideas and proposals</span>
+        </div>
+        <div class="panel analytics-card">
+          <p class="eyebrow">Actions</p>
+          <strong id="analytics-actions">0</strong>
+          <span>Total action items</span>
+        </div>
+        <div class="panel analytics-card">
+          <p class="eyebrow">Completion</p>
+          <strong id="analytics-progress">0%</strong>
+          <span>Actions completed</span>
+        </div>
+      </div>
+      <div class="panel coming-soon">
+        <h3>More signal is coming soon</h3>
+        <p>Once the team has a few weeks of saves and refreshes in the shared folder, this page can show trends by status, priority, and movement type.</p>
+      </div>
     </section>
-
-    <div class="footer-note">
-      Let Them Cook. Shared source of truth is data/initiatives.json in FACTTT.
-    </div>
   </main>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
   <script type="module" src="js/init.js"></script>
 </body>
 </html>
