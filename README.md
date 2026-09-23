@@ -62,14 +62,23 @@ Example inbox submit: [`examples/submit.json`](examples/submit.json)
 
 WebView2 is assumed on target PCs (standard on Windows 10/11).
 
-On a Windows machine (or GitHub Actions `windows-latest`):
+On a Windows machine (or GitHub Actions `windows-latest`), **install npm deps before any Tauri command**. A build without `npm ci` / `npm install` is a hard fail.
 
 ```text
-npm install
+npm ci
 node scripts/decode-icons.js
-node scripts/prepare-frontend.js
-npm run tauri -- build
+npm run tauri -- build --bundles nsis
 ```
+
+Safer equivalent invoke:
+
+```text
+npm ci
+node scripts/decode-icons.js
+npx tauri build --bundles nsis
+```
+
+`beforeBuildCommand` in `src-tauri/tauri.conf.json` already runs `node scripts/prepare-frontend.js`. Do not skip `npm ci` — `@tauri-apps/cli` lives in `devDependencies`.
 
 Primary artifact (portable, no install):
 
@@ -81,7 +90,28 @@ Secondary (optional) NSIS installer, current-user, no admin:
 
 `src-tauri/target/release/bundle/nsis/OperationalMovements_*_x64-setup.exe`
 
-The GitHub Action **Build Windows** on the `Side-Quest` branch uploads both as workflow artifacts. Unsigned builds may show a SmartScreen warning on first run.
+### GitHub Action: Build Windows
+
+Workflow: [`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml) on branch `Side-Quest` (`workflow_dispatch` or push to watched paths).
+
+Order that must not change:
+
+1. checkout + setup-node 22
+2. **Install npm deps** — `npm ci`
+3. rust-toolchain + rust-cache
+4. `node scripts/decode-icons.js`
+5. `cargo test --lib --no-default-features` (in `src-tauri`)
+6. `npm run tauri -- build --bundles nsis`
+7. upload artifacts
+
+Artifacts:
+
+| Artifact | Path | Missing file |
+|---|---|---|
+| `OperationalMovements-portable` | `src-tauri/target/release/OperationalMovements.exe` | **error** (hard fail) |
+| `OperationalMovements-nsis` | `src-tauri/target/release/bundle/nsis/*.exe` | warn |
+
+Unsigned builds may show a SmartScreen warning on first run.
 
 ## Rust commands
 
@@ -90,5 +120,6 @@ The GitHub Action **Build Windows** on the `Side-Quest` branch uploads both as w
 | `get_operator` | Windows `USERNAME`, else `USER`, else `OPERATOR` |
 | `shared_folder_path` | FACTTT root as a string |
 | `read_dashboard` | Read `data/dashboard.json`; create the starter file if missing |
-| `write_submit` | Write `inbox/submit-….json`; never rewrite `dashboard.json` |
+| `write_dashboard` | Write `data/dashboard.json` (Save / source of truth) |
+| `write_submit` | Write `inbox/submit-….json` only; does not rewrite `dashboard.json` |
 | `ensure_share_layout` | Create `data/`, `inbox/`, `archive/` (also on startup) |
